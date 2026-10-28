@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Section 2: Introduction to Python. Part II</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,500;1,400;1,500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="style.css">
+<script>
+window.MathJax = {
+  loader: {load: ['[tex]/tagformat']},
+  tex: {
+    packages: {'[+]': ['tagformat']},
+    tags: 'ams',
+    tagformat: {number: (n) => '2.' + n},
+    macros: {
+      D: '\\mathrm{d}',
+      Div: '\\operatorname{div}',
+      E: ['\\expectation\\left(#1\\right)', 1],
+      I: '\\mathrm{i}',
+      Im: '\\mathop{\\mathrm{Im}}\\nolimits',
+      Ind: ['\\,\\mathbf{1}_{#1}', 1],
+      Int: '\\operatorname{int}',
+      N: '\\mathbf{N}',
+      Poi: ['\\poisson\\left(#1\\right)', 1],
+      Pr: ['\\probability\\left\\{#1\\right\\}', 1],
+      R: '\\mathbf{R}',
+      Re: '\\mathop{\\mathrm{Re}}\\nolimits',
+      Tr: '\\operatorname{tr}',
+      V: ['{\\mathbf{#1}}', 1],
+      Var: ['\\,\\mathrm{Var}\\left(#1\\right)', 1],
+      arctanh: '\\operatorname{arctanh}',
+      bd: '\\operatorname{bd}',
+      bs: ['{\\boldsymbol{#1}}', 1],
+      code: ['\\texttt{#1}', 1],
+      curl: '\\operatorname{curl}',
+      diag: '\\operatorname{diag}',
+      diam: '\\operatorname{diam}',
+      erf: '\\operatorname{erf}',
+      expectation: '\\operatorname{E}',
+      grad: '\\operatorname{grad}',
+      labelitemi: '$\\bullet$',
+      overbar: ['\\mkern 3.5mu\\overline{\\mkern-2mu#1\\mkern-3mu}\\mkern 3.5mu', 1],
+      pdt: '\\partial_t',
+      poisson: '\\operatorname{Poisson}',
+      probability: '\\operatorname{P}',
+      rank: '\\operatorname{rank}',
+      sign: '\\operatorname{sgn}'
+    }
+  }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<script defer src="notes.js"></script>
+</head>
+<body>
+<div class="progress" aria-hidden="true"><span></span></div>
+<header class="topbar">
+  <a class="course-name" href="index.html">Math 488/688: Numerical Analysis</a>
+  <a class="all-sections" href="index.html">All sections</a>
+</header>
+<div class="layout">
+<aside class="sidetoc" aria-label="On this page">
+  <p class="sidetoc-title">Section 2</p>
+  <ol>
+<li><a href="#sec2-1"><span class="tnum">2.1</span><span class="ttl">Lists</span></a></li>
+<li><a href="#sec2-2"><span class="tnum">2.2</span><span class="ttl">Functions</span></a></li>
+<li><a href="#sec2-3"><span class="tnum">2.3</span><span class="ttl">Modules</span></a></li>
+<li><a href="#sec2-4"><span class="tnum">2.4</span><span class="ttl">Examples</span></a></li>
+<li><a href="#sec2-5"><span class="tnum">2.5</span><span class="ttl">Quick review</span></a></li>
+<li><a href="#sec2-6"><span class="tnum">2.6</span><span class="ttl">Coding exercises</span></a></li>
+  </ol>
+</aside>
+<main>
+<header class="hero">
+  <span class="bignum" aria-hidden="true">2</span>
+  <div class="hero-text">
+    <p class="kicker">Section</p>
+    <h1>Introduction to Python. Part II</h1>
+    <p class="byline">Math 488/688: Numerical Analysis<br>e-mail: <a href="mailto:artem.novozhilov@ndsu.edu">artem.novozhilov@ndsu.edu</a>. Fall 2026</p>
+  </div>
+  <svg class="emblem" viewBox="0 0 160 160" aria-hidden="true">
+<line x1="8" y1="112" x2="156" y2="112"/>
+<polyline class="curve" points="20.0,156.0 21.2,156.0 22.4,156.0 23.6,155.9 24.8,155.9 26.0,155.8 27.2,155.7 28.4,155.6 29.6,155.4 30.8,155.3 32.0,155.1 33.2,154.9 34.4,154.7 35.6,154.5 36.8,154.3 38.0,154.0 39.2,153.7 40.4,153.5 41.6,153.1 42.8,152.8 44.0,152.5 45.2,152.1 46.4,151.7 47.6,151.3 48.8,150.9 50.0,150.5 51.2,150.1 52.4,149.6 53.6,149.1 54.8,148.6 56.0,148.1 57.2,147.5 58.4,147.0 59.6,146.4 60.8,145.8 62.0,145.2 63.2,144.6 64.4,144.0 65.6,143.3 66.8,142.6 68.0,141.9 69.2,141.2 70.4,140.5 71.6,139.7 72.8,139.0 74.0,138.2 75.2,137.4 76.4,136.6 77.6,135.7 78.8,134.9 80.0,134.0 81.2,133.1 82.4,132.2 83.6,131.3 84.8,130.3 86.0,129.4 87.2,128.4 88.4,127.4 89.6,126.4 90.8,125.4 92.0,124.3 93.2,123.3 94.4,122.2 95.6,121.1 96.8,120.0 98.0,118.8 99.2,117.7 100.4,116.5 101.6,115.3 102.8,114.1 104.0,112.9 105.2,111.6 106.4,110.4 107.6,109.1 108.8,107.8 110.0,106.5 111.2,105.2 112.4,103.8 113.6,102.5 114.8,101.1 116.0,99.7 117.2,98.3 118.4,96.8 119.6,95.4 120.8,93.9 122.0,92.4 123.2,90.9 124.4,89.4 125.6,87.9 126.8,86.3 128.0,84.7 129.2,83.1 130.4,81.5 131.6,79.9 132.8,78.2 134.0,76.6 135.2,74.9 136.4,73.2 137.6,71.5 138.8,69.8 140.0,68.0 141.2,66.2 142.4,64.4 143.6,62.6 144.8,60.8 146.0,59.0 147.2,57.1 148.4,55.2 149.6,53.4 150.8,51.4 152.0,49.5"/>
+<line class="dash" x1="140" y1="112" x2="140" y2="68"/>
+<line class="ray" x1="101.0" y1="125.2" x2="152.0" y2="50.4"/>
+<circle class="pt" cx="140" cy="68" r="3.5"/><circle class="pt" cx="110" cy="112" r="3"/>
+<text x="134" y="132">x₀</text><text x="92" y="132">x₁</text>
+</svg>
+</header>
+<nav class="toc" aria-label="Contents">
+  <p class="toc-title">In this section</p>
+  <ol>
+<li><a href="#sec2-1"><span class="tnum">2.1</span><span class="ttl">Lists</span></a></li>
+<li><a href="#sec2-2"><span class="tnum">2.2</span><span class="ttl">Functions</span></a></li>
+<li><a href="#sec2-3"><span class="tnum">2.3</span><span class="ttl">Modules</span></a></li>
+<li><a href="#sec2-4"><span class="tnum">2.4</span><span class="ttl">Examples</span></a></li>
+<li><a href="#sec2-5"><span class="tnum">2.5</span><span class="ttl">Quick review</span></a></li>
+<li><a href="#sec2-6"><span class="tnum">2.6</span><span class="ttl">Coding exercises</span></a></li>
+  </ol>
+</nav>
+<article class="notes">
+<h2 id="sec2-1"><span class="secnum">2.1</span><span class="sectitle">Lists</span></h2>
+<p>From a very general standpoint <em>programming</em> is about <em>algorithms</em> and <em>data structures</em>. The first, and the most basic for us in this course, data structure in Python is <code>list</code>, which we already saw in the previous section. Recall that a list in Python is a sequence of objects (any objects), separated by commas and enclosed in square brackets, e.g., <code>my_list = [1, 0, 1, ’Artem’, [5, "blue"]]</code>. The elements of the list can be accessed by their index, which starts from 0, so that <code>my_list[0]</code> is <code>1</code> and <code>my_list[4]</code> is <code>[5, "blue"]</code>. The built-in function <code>len</code> returns the length of a list: <code>len(my_list)</code> is <code>5</code>.</p>
+<p>Before discussing various ways of dealing with lists in Python, let me emphasize a very important distinction of lists from, say, <code>int</code> or <code>float</code> data. Consider the following code.</p>
+<pre class="code session"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">a</span>       <span class="c1"># b is another name for the same object, the number 5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="mi">10</span>      <span class="c1"># now the name a refers to a different object, the number 10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span>           <span class="c1"># what is b now?</span>
+<span class="go">5</span></code></pre>
+<p>So <code>b</code> is still 5 and <code>a</code> is 10, as expected. Now let me try to do something similar with lists.</p>
+<pre class="code session"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">list1</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">list2</span> <span class="o">=</span> <span class="n">list1</span>       <span class="c1"># list2 is another name for the same list</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">list1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>       <span class="c1"># I change the first element of this list</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">list1</span>
+<span class="go">[10, 2, 3]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">list2</span>               <span class="c1"># what will happen now?</span>
+<span class="go">[10, 2, 3]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">list2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;end&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">list1</span>
+<span class="go">[10, &#39;end&#39;, 3]</span></code></pre>
+<p>In both cases the assignment <code>b = a</code> (or <code>list2 = list1</code>) does <em>not</em> create any new object, it only creates one more name for an existing object (if you have experience programming in C, recall <em>pointers</em>). The difference is in what I do next. The assignment <code>a = 10</code> makes the name <code>a</code> refer to a different object, and the object 5, which is still called <code>b</code>, is not affected. The command <code>list1[0] = 10</code>, on the other hand, changes the object itself, and since <code>list1</code> and <code>list2</code> are two names of the same object, I see the change using either name. Numbers cannot be changed at all (one says that they are <em>immutable</em>), whereas lists can (they are <em>mutable</em>). The details are beyond our course, but you have to keep in mind that <code>list2 = list1</code> does not copy the list.</p>
+<p>So, how to make a copy instead of making just another name for a list? For instance, <code>list2 = list1.copy()</code> or <code>list2 = list(list1)</code>.</p>
+<p>Somewhat similar to the function <code>range</code> (recall the previous section), I can use so-called <em>slicing</em> to access multiple elements of a list: <code>list1[start:stop:step]</code>, note that <code>stop</code> is not included, the same as in <code>range</code>. Any of <code>start</code>, <code>stop</code>, <code>step</code> can be omitted, in which case they are the beginning of the list, the end of the list, and 1, respectively. I can also use negative indices to access elements of a list from the end: if <code>list1 = [1, 2, 3]</code> then <code>list1[-1]</code> is <code>3</code>.</p>
+<p>Here are some examples of working with lists.</p>
+<pre class="code session"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">list1</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="s2">&quot;yellow&quot;</span><span class="p">,</span> <span class="s2">&quot;grey&quot;</span><span class="p">,</span> <span class="s2">&quot;orange&quot;</span><span class="p">,</span> <span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;white&quot;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">list1</span><span class="p">[:]</span>        <span class="c1"># all elements (this is also a copy of list1)</span>
+<span class="go">[&#39;blue&#39;, &#39;green&#39;, &#39;yellow&#39;, &#39;grey&#39;, &#39;orange&#39;, &#39;red&#39;, &#39;black&#39;, &#39;white&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">list1</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span>       <span class="c1"># all elements up to (but not including) the fifth element</span>
+<span class="go">[&#39;blue&#39;, &#39;green&#39;, &#39;yellow&#39;, &#39;grey&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">list1</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span>      <span class="c1"># elements with indexes 1, 2, 3</span>
+<span class="go">[&#39;green&#39;, &#39;yellow&#39;, &#39;grey&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">list1</span><span class="p">[::</span><span class="mi">2</span><span class="p">]</span>      <span class="c1"># from the beginning to the end with step 2</span>
+<span class="go">[&#39;blue&#39;, &#39;yellow&#39;, &#39;orange&#39;, &#39;black&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">list1</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span>      <span class="c1"># the last three elements</span>
+<span class="go">[&#39;red&#39;, &#39;black&#39;, &#39;white&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">list1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;pink&quot;</span><span class="p">)</span>    <span class="c1"># add a new element at the end of the existing list</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">list1</span>
+<span class="go">[&#39;blue&#39;, &#39;green&#39;, &#39;yellow&#39;, &#39;grey&#39;, &#39;orange&#39;, &#39;red&#39;, &#39;black&#39;, &#39;white&#39;, &#39;pink&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">list2</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;dark&quot;</span><span class="p">,</span> <span class="s2">&quot;bright&quot;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">list1</span> <span class="o">+</span> <span class="n">list2</span>   <span class="c1"># list concatenation</span>
+<span class="go">[&#39;blue&#39;, &#39;green&#39;, &#39;yellow&#39;, &#39;grey&#39;, &#39;orange&#39;, &#39;red&#39;, &#39;black&#39;, &#39;white&#39;, &#39;pink&#39;, &#39;dark&#39;, &#39;bright&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">10</span>        <span class="c1"># an easy way to create a list of necessary length</span>
+<span class="go">[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]</span></code></pre>
+<p>Note the syntax <code>list1.append("pink")</code>: <code>append</code> is a function that belongs to every list (such functions are called <em>methods</em>), and it changes the list it is applied to.</p>
+<p>Now consider the problem to reverse a given list. A possible solution is given below (I continue with <code>list1</code> from above), please make sure that you understand what is done in each line of the code.</p>
+<pre class="code script"><code><span class="c1"># Reverse a list</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">list1</span><span class="p">)</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">list1</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span> <span class="o">//</span> <span class="mi">2</span><span class="p">):</span>
+    <span class="n">list1</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">list1</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">list1</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">i</span><span class="p">],</span> <span class="n">list1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">list1</span><span class="p">)</span></code></pre>
+<pre class="pyout"><code>['blue', 'green', 'yellow', 'grey', 'orange', 'red', 'black', 'white', 'pink']
+['pink', 'white', 'black', 'red', 'orange', 'grey', 'yellow', 'green', 'blue']</code></pre>
+<p>We could have done it much easier: <code>list1.reverse()</code> does exactly the same. The message here, however, is that a built-in method is not a magical command that instantaneously does what you need; on the contrary, behind such a command there is usually an algorithm that requires a certain (sometimes quite large) number of operations. So use these methods, but keep in mind that they have a price. (Actually, if you understood the slicing above, a reversed copy of a list can be obtained as <code>list1[::-1]</code>; try it and carefully understand how it works.)</p>
+<p>Another important tool in Python is the so-called <em>list comprehension</em>, which allows creating new lists in a very concise form. Consider the problem of making a list of the squares of the first <code>n</code> natural numbers. A possible straightforward solution is below.</p>
+<pre class="code script"><code><span class="n">n</span> <span class="o">=</span> <span class="mi">10</span>
+
+<span class="n">squares</span> <span class="o">=</span> <span class="p">[]</span>    <span class="c1"># initially the list is empty</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+    <span class="n">squares</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">i</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">squares</span><span class="p">)</span></code></pre>
+<pre class="pyout"><code>[1, 4, 9, 16, 25, 36, 49, 64, 81, 100]</code></pre>
+<p>Instead I can write the following,</p>
+<pre class="code script"><code><span class="n">n</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">squares</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span></code></pre>
+<p>which will produce the same result. Note the syntax: I compute some expression for each value of the variable in the given range, and the results form the required list, exactly as in the mathematical notation <span class="math inline">\(\{i^2 : i = 1,\ldots,n\}\)</span>.</p>
+<p>Assume now that I need to produce a list of the squares of all even numbers from 1 to <code>n</code>. Here is a solution.</p>
+<pre class="code script"><code><span class="n">n</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">even_squares</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">even_squares</span><span class="p">)</span></code></pre>
+<pre class="pyout"><code>[4, 16, 36, 64, 100]</code></pre>
+<p>List comprehension not only allows very concise code, it is usually also faster than appending elements to a list one at a time. You should definitely use this technique in Python.</p>
+<p>I will use lists to represent <em>vectors</em> and <em>matrices</em>, so in the latter case I will be dealing with a list of lists, each inner list being a row of the matrix. Here is a simple example: I create two four by five (note the order and compare with the code below) matrices and add them together; the result is a new matrix, which I initially fill with zeros.</p>
+<pre class="code script"><code><span class="n">A</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mi">5</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">)]</span>
+<span class="n">B</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="mi">5</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">)]</span>
+<span class="n">C</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">5</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">)]</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">)):</span>         <span class="c1"># len(A) is the number of rows</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">])):</span>  <span class="c1"># len(A[0]) is the number of columns</span>
+        <span class="n">C</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">C</span><span class="p">)</span></code></pre>
+<pre class="pyout"><code>[[3, 3, 3, 3, 3], [3, 3, 3, 3, 3], [3, 3, 3, 3, 3], [3, 3, 3, 3, 3]]</code></pre>
+<p>Why not simply <code>C = [[0] * 5] * 4</code>? Look at this:</p>
+<pre class="code session"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">M</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span>   <span class="c1"># looks like a 2 by 3 matrix of zeros...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">M</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>         <span class="c1"># ...and I change one element in the first row</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">M</span>
+<span class="go">[[1, 0, 0], [1, 0, 0]]</span></code></pre>
+<p>The operation <code>* 2</code> repeats the <em>same</em> list <code>[0, 0, 0]</code> two times, so both rows of <code>M</code> are two names of one object, exactly as <code>list1</code> and <code>list2</code> above. The list comprehension, on the other hand, creates a new row at each step.</p>
+<h2 id="sec2-2"><span class="secnum">2.2</span><span class="sectitle">Functions</span></h2>
+<p>Functions in programming are much more than functions in mathematics. Not only do they receive some parameters as an input and produce some result as an output, similarly to mathematical functions, they are also used to divide the code into manageable, reusable, and easy to test parts, such that the whole program can be built out of existing (and error free) functions.</p>
+<p>We already saw a number of <em>built-in</em> functions, such as <code>print</code>, <code>input</code>, etc. In addition to them, I can define my own functions in the following way.</p>
+<pre class="code script"><code><span class="k">def</span><span class="w"> </span><span class="nf">my_function_name</span><span class="p">(</span><span class="n">param1</span><span class="p">,</span> <span class="n">param2</span><span class="p">):</span>
+    <span class="c1"># note the indentation!</span>
+    <span class="n">body_of_function</span>
+    <span class="k">return</span> <span class="n">result</span>   <span class="c1"># this is an optional line</span></code></pre>
+<p>That is, I use the keyword <code>def</code> to start the definition, then I use a name for my function. In the parentheses I list the parameters of my function, which will be used in the calculations, next there should be some code that performs the required operations, and finally I return some result (which is optional; a function without <code>return</code> returns the special object <code>None</code>, which means “nothing”). A function can contain several <code>return</code> commands; as soon as one of them is executed, the function stops.</p>
+<p>Here is an example. Recall that <span class="math inline">\(n!\)</span> reads “<span class="math inline">\(n\)</span> factorial” and is defined as <span class="math inline">\(n! = 1\cdot 2\cdot\ldots\cdot n\)</span> for <span class="math inline">\(n\geq 1\)</span>, and <span class="math inline">\(0!=1\)</span>. Let me write a Python function that computes it.</p>
+<pre class="code script"><code><span class="k">def</span><span class="w"> </span><span class="nf">factorial</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return n! for a nonnegative integer n.&quot;&quot;&quot;</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">*=</span> <span class="n">i</span>     <span class="c1"># the same as result = result * i</span>
+    <span class="k">return</span> <span class="n">result</span></code></pre>
+<p>The first line of the body, enclosed in triple quotes, is called a <em>docstring</em>. It describes what the function does, and the user will see it after typing <code>help(factorial)</code>. It is a good habit to write a docstring for every function. Note that for <span class="math inline">\(n=0\)</span> and <span class="math inline">\(n=1\)</span> the loop is not executed at all, and the function correctly returns 1. The command <code>result *= i</code> is an abbreviation of <code>result = result * i</code>; similarly, one can use <code>+=, -=, /=, //=, %=</code>.</p>
+<p>After I defined this function, I can use it.</p>
+<pre class="code session"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">factorial</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="go">3628800</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">factorial</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
+<span class="go">265252859812191058636308480000000</span></code></pre>
+<p>Note that integers in Python can be arbitrarily large (as long as there is enough memory), and the computations with them are exact. This is not so for <code>float</code> numbers, as we saw in the previous section.</p>
+<p>Similarly to what I discussed about lists above, you should be careful when passing lists to functions. Consider these two functions</p>
+<pre class="code script"><code><span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">x</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">change_first</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="k">return</span> <span class="n">x</span></code></pre>
+<p>and use them:</p>
+<pre class="code session"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add_one</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="go">6</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span>
+<span class="go">5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">list1</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">change_first</span><span class="p">(</span><span class="n">list1</span><span class="p">)</span>
+<span class="go">[100, 2, 3]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">list1</span>
+<span class="go">[100, 2, 3]</span></code></pre>
+<p>Inside a function its parameter <code>x</code> is one more name for the object that I pass to the function. The assignment <code>x = x + 1</code> makes <code>x</code> refer to a new object and <code>a</code> is not affected, whereas <code>x[0] = 100</code> changes the list itself, and hence <code>list1</code> is changed. It is exactly the same story as in the previous subsection.</p>
+<p>There is much more to Python functions, and I will be introducing additional convenient syntax as it is required.</p>
+<h2 id="sec2-3"><span class="secnum">2.3</span><span class="sectitle">Modules</span></h2>
+<p>Since we are doing mathematics, we need the whole library of standard mathematical functions, like sine, cosine, exponential, etc. But typing something like <code>sin(3.14)</code> will return an error. To be able to use these functions I need to <em>import</em> the <em>module</em> that contains them. Python comes with many such modules (they form the so-called <em>standard library</em>), and the mathematical functions are in the module <code>math</code>.</p>
+<pre class="code session"><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">math</span>         <span class="c1"># makes the functions of the module math available</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">1.4142135623730951</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>   <span class="c1"># note that the result is not zero!</span>
+<span class="go">1.2246467991473532e-16</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">help</span><span class="p">(</span><span class="n">math</span><span class="p">)</span>          <span class="c1"># shows the list of the functions you can now use</span></code></pre>
+<p>Note that the names of the functions are written as <code>math.sin</code>, <code>math.pi</code>, etc. Also note that the second result is not zero because <code>math.pi</code> is a <code>float</code>, that is, only an approximation of the number <span class="math inline">\(\pi\)</span>; this is one more example of rounding errors.</p>
+<p>There are also other ways to import, e.g., <code>import math as m</code> allows to write <code>m.sin</code>, and <code>from math import sin, pi</code> allows to write simply <code>sin(pi)</code>. In our course I will write <code>import math</code> and <code>math.sin</code>, so that it is always clear where a function comes from. The only exceptions will be large packages (collections of modules) that are not a part of the standard library and have commonly accepted abbreviations, such as <code>numpy</code>, which is always imported as <code>np</code>. I will be introducing other modules and packages as I need them.</p>
+<h2 id="sec2-4"><span class="secnum">2.4</span><span class="sectitle">Examples</span></h2>
+<p>Here I collect a few examples of programming some relatively simple and short Python functions. I also use some additional features, which I explain along the way. Your task is to work through each line of the code to make sure you understand what is happening.</p>
+<div class="thm example style-definition" id="ex:2:leftpoint"><p><span class="thm-head">Example 2.1.</span> Let me go back to the problem that I used to motivate the course, that is, to the leftpoint rule <span class="math display">\[
+\int_a^b f(x)\D x\approx L_n=h\sum_{j=0}^{n-1}f(x_j),\quad h=\frac{b-a}{n},\quad x_j=a+jh,
+\]</span> for <span class="math inline">\(f(x)=e^{-x^2}\)</span>, <span class="math inline">\(a=0\)</span>, <span class="math inline">\(b=1\)</span>. In Section 1 I already wrote a program for it, but now I can do better. First, the exponential function is now available as <code>math.exp</code>. Second, and more importantly, I can write a function that implements the leftpoint rule for <em>any</em> function <span class="math inline">\(f\)</span> on <em>any</em> interval <span class="math inline">\([a,b]\)</span>, and then use it as many times as I like.</p>
+<pre class="code script"><code><span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">leftpoint</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the leftpoint approximation of the integral of f over [a, b]</span>
+<span class="sd">    with n subintervals.&quot;&quot;&quot;</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">total</span> <span class="o">+=</span> <span class="n">f</span><span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="n">j</span> <span class="o">*</span> <span class="n">h</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">h</span> <span class="o">*</span> <span class="n">total</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">integrand</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span>
+
+
+<span class="nb">print</span><span class="p">(</span><span class="n">leftpoint</span><span class="p">(</span><span class="n">integrand</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">50</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">leftpoint</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span></code></pre>
+<pre class="pyout"><code>0.753120812777637
+1.9998355038874436</code></pre>
+<p>The new thing here is that the first parameter of <code>leftpoint</code> is itself a function: in Python, functions are objects, which can be passed to other functions, exactly as numbers or lists. In the last line I pass the built-in <code>math.sin</code>, and the result approximates <span class="math inline">\(\int_0^\pi\sin x\D x=2\)</span>. Note that the first line of the output coincides with the value <span class="math inline">\(L_{50}\)</span> found in Section 1, and that the code of <code>leftpoint</code> follows the mathematical formula even more closely than before.</p>
+<p>(By the way, there is also a built-in function <code>sum</code>, which adds the elements of a list, so the body of <code>leftpoint</code> can be written in two lines: <code>h = (b - a) / n</code> and <code>return h * sum([f(a + j * h) for j in range(n)])</code>.)</p>
+</div>
+<div class="thm example style-definition" id="ex:2:matrix"><p><span class="thm-head">Example 2.2.</span> Write a function that accepts two matrices and, if possible, multiplies them. The output is the product. Recall that matrices <span class="math inline">\(\bs A\)</span> and <span class="math inline">\(\bs B\)</span> can be multiplied only if the number of columns of the first matrix is equal to the number of rows of the second one. So, if <span class="math inline">\(\bs A\)</span> is an <span class="math inline">\(m\times k\)</span> matrix and <span class="math inline">\(\bs B\)</span> is a <span class="math inline">\(k\times n\)</span> matrix then the result will be an <span class="math inline">\(m\times n\)</span> matrix <span class="math inline">\(\bs C=\bs{AB}\)</span> with the elements <span class="math display">\[
+c_{ij}=\sum_{p=1}^k a_{ip}b_{pj},\quad i=1,\ldots,m,\quad j=1,\ldots,n.
+\]</span></p>
+<p>Here is a function that does what is required.</p>
+<pre class="code script"><code><span class="k">def</span><span class="w"> </span><span class="nf">matrix_product</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the product AB of matrices A (m by k) and B (k by n).</span>
+
+<span class="sd">    If the matrices cannot be multiplied, print a message and return None.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">len</span><span class="p">(</span><span class="n">B</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">B</span><span class="p">)</span> <span class="o">!=</span> <span class="n">k</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Matrices cannot be multiplied&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="c1"># allocate the m by n result, filled with zeros</span>
+    <span class="n">C</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">)]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+                <span class="n">C</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">+=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">p</span><span class="p">]</span> <span class="o">*</span> <span class="n">B</span><span class="p">[</span><span class="n">p</span><span class="p">][</span><span class="n">j</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">C</span></code></pre>
+<p>In the definition of my function I indicate that I expect my arguments to be lists (<code>A: list</code>) and that the output is also a list (<code>-&gt; list</code>). These are called <em>type hints</em>; they are completely optional, Python does not perform any type checking, and they are given only for future readers of the code. It is up to you whether to use this feature of Python.</p>
+<p>I assume that the user is careful enough to provide my function with matrices, i.e., lists of lists, but I check inside whether these two matrices can be multiplied (the number of columns of the first one, <code>k</code>, should be equal to the number of rows of the second one, <code>len(B)</code>). If not, the function prints a message and returns <code>None</code>. After that I just program the formula from above, creating initially a template for the product, which is an <span class="math inline">\(m\times n\)</span> matrix of zeros. Note that I use the same names <code>m</code>, <code>k</code>, <code>n</code>, <code>i</code>, <code>j</code>, <code>p</code> as in the mathematical formula, which makes it easy to check the code; the only difference is that the indexes in Python start from 0, and not from 1.</p>
+<p>To test this function I will create two matrices, filling them with random 0’s and 1’s. For this purpose I import the module <code>random</code> and use its function <code>random.randint(a, b)</code>, which returns a random integer <span class="math inline">\(N\)</span> such that <span class="math inline">\(a\leq N\leq b\)</span>. The command <code>random.seed(2026)</code> makes the generated sequence of “random” numbers the same every time the program is run (try to remove it and run the program several times).</p>
+<pre class="code script"><code><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+
+<span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">2026</span><span class="p">)</span>   <span class="c1"># makes the &quot;random&quot; matrices the same at every run</span>
+
+<span class="n">m</span> <span class="o">=</span> <span class="mi">3</span>   <span class="c1"># number of rows of A</span>
+<span class="n">k</span> <span class="o">=</span> <span class="mi">4</span>   <span class="c1"># number of columns of A and number of rows of B</span>
+<span class="n">n</span> <span class="o">=</span> <span class="mi">2</span>   <span class="c1"># number of columns of B</span>
+
+<span class="n">A</span> <span class="o">=</span> <span class="p">[[</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">)]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">)]</span>   <span class="c1"># m by k</span>
+<span class="n">B</span> <span class="o">=</span> <span class="p">[[</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">)]</span>   <span class="c1"># k by n</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;A = </span><span class="si">{</span><span class="n">A</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;B = </span><span class="si">{</span><span class="n">B</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;AB = </span><span class="si">{</span><span class="n">matrix_product</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="w"> </span><span class="n">B</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;BA = </span><span class="si">{</span><span class="n">matrix_product</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="w"> </span><span class="n">A</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></code></pre>
+<pre class="pyout"><code>A = [[0, 1, 0, 0], [1, 1, 1, 0], [0, 0, 0, 1]]
+B = [[0, 1], [0, 1], [1, 0], [1, 1]]
+AB = [[0, 1], [1, 2], [1, 1]]
+Matrices cannot be multiplied
+BA = None</code></pre>
+</div>
+<div class="thm example style-definition" id="ex:2:power"><p><span class="thm-head">Example 2.3.</span> Let <span class="math inline">\(a\)</span> be a real number (<code>int</code> or <code>float</code>) and <span class="math inline">\(n\)</span> be a nonnegative integer. Without using Python’s <code>**</code>, write a program that computes <span class="math display">\[
+a^n=a\cdot a\cdot \ldots \cdot a\quad (n\text{ times}),\quad a^0=1.
+\]</span></p>
+<p>One obvious solution is to multiply <span class="math inline">\(a\)</span> exactly <span class="math inline">\(n\)</span> times. This solution is given below in the function <code>power_1</code>. This solution, however, is very slow, especially for large powers. Can we do better? Actually, yes. To understand why, start with a special choice for <span class="math inline">\(n\)</span>, namely, powers of 2. How would I compute, e.g., <span class="math inline">\(4^{16}\)</span>, noticing that <span class="math inline">\(16=2^4\)</span>? I can calculate <span class="math inline">\(4^2 = 4\cdot 4\)</span> first, then <span class="math inline">\(4^4 = 4^2\cdot 4^2\)</span> (since I already know <span class="math inline">\(4^2\)</span>), <span class="math inline">\(4^8 = 4^4\cdot 4^4\)</span>, and finally <span class="math inline">\(4^{16} = 4^8\cdot 4^8\)</span>. That is, instead of 15 multiplications, I need only four! How to generalize this to an arbitrary power <span class="math inline">\(n\)</span>? Well, we can represent any integer <span class="math inline">\(n\)</span> as a sum of powers of 2 with coefficients that are either 0 or 1. For instance, if <span class="math inline">\(n=10\)</span> then <span class="math display">\[
+10 = 1\cdot 2^3+ 0\cdot 2^2+1\cdot 2^1+0\cdot 2^0
+\]</span> (an experienced reader has noticed that I am writing 10 in base 2). Now for any <span class="math inline">\(a\)</span> <span class="math display">\[
+a^{10}=a^{2^3}\cdot a^{2^1},
+\]</span> and in general any power can be represented as a product of factors, each of which is <span class="math inline">\(a\)</span> raised to a power of two. So the idea is to calculate these factors quickly by repeated squaring as described above, and multiply together those of them that are needed. I invite you to look carefully through the function <code>power_2</code>, which does exactly this in an efficient manner. (<em>Hint:</em> check that the quantity <span class="math inline">\(d\cdot c^n\)</span> does not change in the loop.) It requires at most <span class="math inline">\(2\log_2 n\)</span> multiplications instead of <span class="math inline">\(n\)</span>.</p>
+<p>To convince you that my second function is way more efficient, I write a function <code>test</code>, which accepts as a parameter the function to be tested (recall Example <a href="#ex:2:leftpoint">2.1</a>) and calls it <code>N</code> times. I also use the function <code>perf_counter</code> from the module <code>time</code>, which returns the current time in seconds, to see how fast my exponentiation works. For comparison I also check how fast the built-in operator <code>**</code> performs.</p>
+<pre class="code script"><code><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">power_1</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a**n computed with n multiplications.&quot;&quot;&quot;</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">c</span> <span class="o">*=</span> <span class="n">a</span>
+    <span class="k">return</span> <span class="n">c</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">power_2</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a**n computed by repeated squaring.&quot;&quot;&quot;</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">a</span>   <span class="c1"># c runs through a, a^2, a^4, a^8, ...</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="mi">1</span>   <span class="c1"># d accumulates the result</span>
+    <span class="k">while</span> <span class="n">n</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">n</span> <span class="o">//</span> <span class="mi">2</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">c</span> <span class="o">*</span> <span class="n">c</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">d</span> <span class="o">*</span> <span class="n">c</span>
+    <span class="k">return</span> <span class="n">d</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">power_builtin</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a**n computed with Python&#39;s operator **.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">a</span> <span class="o">**</span> <span class="n">n</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">N</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Call f(a, n) N times and return the elapsed time in seconds.&quot;&quot;&quot;</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="n">f</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span>
+
+
+<span class="nb">print</span><span class="p">(</span><span class="n">power_1</span><span class="p">(</span><span class="mi">23</span><span class="p">,</span> <span class="mi">3147</span><span class="p">)</span> <span class="o">==</span> <span class="n">power_2</span><span class="p">(</span><span class="mi">23</span><span class="p">,</span> <span class="mi">3147</span><span class="p">)</span> <span class="o">==</span> <span class="n">power_builtin</span><span class="p">(</span><span class="mi">23</span><span class="p">,</span> <span class="mi">3147</span><span class="p">))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;power_1:       </span><span class="si">{</span><span class="n">test</span><span class="p">(</span><span class="n">power_1</span><span class="p">,</span><span class="w"> </span><span class="mi">23</span><span class="p">,</span><span class="w"> </span><span class="mi">3147</span><span class="p">,</span><span class="w"> </span><span class="mi">1500</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;power_2:       </span><span class="si">{</span><span class="n">test</span><span class="p">(</span><span class="n">power_2</span><span class="p">,</span><span class="w"> </span><span class="mi">23</span><span class="p">,</span><span class="w"> </span><span class="mi">3147</span><span class="p">,</span><span class="w"> </span><span class="mi">1500</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;power_builtin: </span><span class="si">{</span><span class="n">test</span><span class="p">(</span><span class="n">power_builtin</span><span class="p">,</span><span class="w"> </span><span class="mi">23</span><span class="p">,</span><span class="w"> </span><span class="mi">3147</span><span class="p">,</span><span class="w"> </span><span class="mi">1500</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span></code></pre>
+<pre class="pyout"><code>True
+power_1:       1.3550 seconds
+power_2:       0.0954 seconds
+power_builtin: 0.0745 seconds</code></pre>
+<p>The first line checks that all three functions give the same result (in Python one can write <code>x == y == z</code> instead of <code>x == y and y == z</code>); recall that integer arithmetic is exact, and note that <span class="math inline">\(23^{3147}\)</span> has 4286 digits. The times you get on your computer will be different, but the ratios should be similar. Please note how close my second function is to the built-in operator in terms of performance.</p>
+</div>
+<h2 id="sec2-5"><span class="secnum">2.5</span><span class="sectitle">Quick review</span></h2>
+<p>In this section we discussed</p>
+<ol>
+<li><p>lists: indexing (also with negative indexes), slicing <code>list1[start:stop:step]</code>, methods <code>append</code>, <code>copy</code>, <code>reverse</code>, concatenation <code>+</code> and repetition <code>*</code>;</p></li>
+<li><p>the difference between creating one more name for a list (<code>list2 = list1</code>) and creating a copy of it (<code>list2 = list1.copy()</code>);</p></li>
+<li><p>list comprehension <code>[i * i for i in range(1, n + 1) if i % 2 == 0]</code>;</p></li>
+<li><p>matrices as lists of lists, and why <code>[[0] * n for i in range(m)]</code> and not <code>[[0] * n] * m</code>;</p></li>
+<li><p>functions: <code>def</code>, <code>return</code>, <code>None</code>, docstrings, type hints, functions as parameters of other functions;</p></li>
+<li><p>augmented assignment <code>+=, -=, *=, /=, //=, %=</code>;</p></li>
+<li><p>arbitrarily large integers;</p></li>
+<li><p>modules: <code>import math</code>, and the modules <code>math</code>, <code>random</code>, <code>time</code>;</p></li>
+<li><p>the built-in function <code>sum</code>.</p></li>
+</ol>
+<h2 id="sec2-6"><span class="secnum">2.6</span><span class="sectitle">Coding exercises</span></h2>
+<p>You should work through as many of the following coding exercises as possible to make sure you are prepared for the next part of the course. The exercises are arranged, roughly, in the order of increasing difficulty, so it is natural to start from the beginning. Also, in <em>Think Python</em> there are a lot of much simpler exercises that test basic understanding, and you may want to start with them. If you have time, the coding exercises in the additional sources of information are highly recommended.</p>
+<p><strong>Warm-up.</strong></p>
+<div class="thm exercise style-definition" id="exercise-2-1"><p><span class="thm-head">Exercise 2.1.</span> If we list all of the natural numbers below 10 that are multiples of 3 or 5, we get 3, 5, 6, and 9. The sum of these multiples is 23. Write code to find the sum of all the multiples of 3 or 5 below 1000. Your code needs to run error free and output only the sum.</p>
+</div>
+<div class="thm exercise style-definition" id="exercise-2-2"><p><span class="thm-head">Exercise 2.2.</span> Write a function that returns the largest element of a given list of numbers. Do not use any built-in functions or methods (such as <code>max</code> or <code>sort</code>). Write another function that returns the index of the first largest element in a given list.</p>
+</div>
+<div class="thm exercise style-definition" id="exercise-2-3"><p><span class="thm-head">Exercise 2.3.</span> Write a function that, for a given natural number <span class="math inline">\(n\)</span>, returns the number with the same decimal digits in the backward order (i.e., if the input is <span class="math inline">\(12345\)</span> then the output should be <span class="math inline">\(54321\)</span>). Use only arithmetic operations (<em>Hint:</em> <code>//</code> and <code>%</code>), and not strings.</p>
+</div>
+<div class="thm exercise style-definition" id="exer:2:fib"><p><span class="thm-head">Exercise 2.4.</span> Recall that the Fibonacci numbers are defined as <span class="math display">\[
+F_{n}=F_{n-1}+F_{n-2},\quad n=2,3,\ldots, \quad F_0=0,\,F_1=1.
+\]</span> Write a function that returns the <span class="math inline">\(m\)</span>-th Fibonacci number <span class="math inline">\(F_m\)</span>.</p>
+</div>
+<div class="thm exercise style-definition" id="exercise-2-5"><p><span class="thm-head">Exercise 2.5.</span> I represent a vector <span class="math inline">\(\bs x=(x_1,\ldots,x_n)\)</span> as a list with <span class="math inline">\(n\)</span> elements and a matrix as a list of its rows. Write a function <code>dot(u, v)</code> that returns the dot product <span class="math inline">\(\bs u\cdot\bs v=\sum_{i=1}^n u_iv_i\)</span> of two vectors of the same length, and a function <code>matrix_vector(A, x)</code> that returns the product <span class="math inline">\(\bs A\bs x\)</span> of an <span class="math inline">\(m\times n\)</span> matrix <span class="math inline">\(\bs A\)</span> and a vector <span class="math inline">\(\bs x\)</span> with <span class="math inline">\(n\)</span> elements. Check that the dimensions agree, as in Example <a href="#ex:2:matrix">2.2</a>. (<em>Hint:</em> the <span class="math inline">\(i\)</span>-th element of <span class="math inline">\(\bs A\bs x\)</span> is the dot product of the <span class="math inline">\(i\)</span>-th row of <span class="math inline">\(\bs A\)</span> with <span class="math inline">\(\bs x\)</span>.)</p>
+</div>
+<div class="thm exercise style-definition" id="exercise-2-6"><p><span class="thm-head">Exercise 2.6.</span> Let <span class="math inline">\(\bs A\)</span> be an <span class="math inline">\(m\times n\)</span> matrix. Recall that its transpose is the <span class="math inline">\(n\times m\)</span> matrix <span class="math inline">\(\bs B=\bs A^\top\)</span> with the elements <span class="math inline">\(b_{ij}=a_{ji}\)</span>. Write a function that accepts a matrix <span class="math inline">\(\bs A\)</span> and returns its transpose. Then write another version of this function, whose body consists of a single line with a list comprehension.</p>
+</div>
+<div class="thm exercise style-definition" id="exer:2:eps"><p><span class="thm-head">Exercise 2.7.</span> Start with <code>eps = 1.0</code> and keep dividing <code>eps</code> by 2 as long as <code>1.0 + eps / 2 &gt; 1.0</code>. Print the final value of <code>eps</code> and compare it with <span class="math inline">\(2^{-52}\)</span>. This number is called <em>machine epsilon</em>, roughly speaking, it is the relative precision of <code>float</code> numbers. How many correct decimal digits does a <code>float</code> number carry? Use your result to explain why Algorithm 2 for switching the values of two variables in Section 1 failed for <code>a = 1e16</code> and <code>b = 1.0</code>. (Mathematically, of course, <span class="math inline">\(1+\varepsilon&gt;1\)</span> for any <span class="math inline">\(\varepsilon&gt;0\)</span>, so the loop should never stop!)</p>
+</div>
+<p><strong>Intermediate.</strong></p>
+<div class="thm exercise style-definition" id="exer:2:lemma"><p><span class="thm-head">Exercise 2.8.</span> (Not a coding exercise.) Let <span class="math inline">\(a\)</span> be a composite number (i.e., not prime). Prove that it must have a prime divisor <span class="math inline">\(p\)</span> such that <span class="math inline">\(p\leq \sqrt{a}\)</span>.</p>
+</div>
+<div class="thm exercise style-definition" id="exer:2:gcd"><p><span class="thm-head">Exercise 2.9.</span> Recall that the greatest common divisor <span class="math inline">\(\gcd(a,b)\)</span> of two integers <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span>, not both zero, is the largest integer that divides both <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span>. Euclid’s algorithm is based on the facts that <span class="math inline">\(\gcd(a,b)=\gcd(b,r)\)</span>, where <span class="math inline">\(r\)</span> is the remainder of the division of <span class="math inline">\(a\)</span> by <span class="math inline">\(b\)</span>, and <span class="math inline">\(\gcd(a,0)=a\)</span>. Using Euclid’s algorithm, write a function that returns the greatest common divisor of two nonnegative integers, not both zero.</p>
+</div>
+<div class="thm exercise style-definition" id="exercise-2-10"><p><span class="thm-head">Exercise 2.10.</span> Write a function that checks whether a given natural number <span class="math inline">\(a\)</span> is prime. Try not to perform unnecessary computations (recall Exercise <a href="#exer:2:lemma">2.8</a>). Check that 8675309 is prime.</p>
+</div>
+<div class="thm exercise style-definition" id="exercise-2-11"><p><span class="thm-head">Exercise 2.11.</span> For a given list of numbers find the number of different elements in this list (without using the <code>set</code> data structure in Python).</p>
+</div>
+<div class="thm exercise style-definition" id="exercise-2-12"><p><span class="thm-head">Exercise 2.12.</span> A polynomial <span class="math inline">\(p(x)=c_0+c_1x+c_2x^2+\ldots+c_nx^n\)</span> can be represented by the list of its coefficients <code>[c0, c1, ..., cn]</code>. Write a function that accepts this list and a number <span class="math inline">\(x\)</span> and returns <span class="math inline">\(p(x)\)</span>, using <em>Horner’s method</em> <span class="math display">\[
+p(x)=c_0+x\Bigl(c_1+x\bigl(c_2+\ldots+x(c_{n-1}+xc_n)\ldots\bigr)\Bigr).
+\]</span> How many multiplications does your function need? How many multiplications are needed if each power <span class="math inline">\(x^i\)</span> is computed separately as <span class="math inline">\(x\cdot x\cdot\ldots\cdot x\)</span>?</p>
+</div>
+<div class="thm exercise style-definition" id="exercise-2-13"><p><span class="thm-head">Exercise 2.13.</span> Write a function that finds the roots of the quadratic polynomial <span class="math display">\[
+ax^2+bx+c,\quad a\neq 0.
+\]</span> Consider three possible cases: two distinct real roots, one double root, and two complex conjugate roots (in the last case return the real and imaginary parts of the roots). Test your function with <span class="math inline">\(a=1\)</span>, <span class="math inline">\(b=10^8\)</span>, <span class="math inline">\(c=1\)</span>. The product of the two roots is <span class="math inline">\(c/a=1\)</span> (why?), and the larger in absolute value root is very close to <span class="math inline">\(-10^8\)</span>, so the smaller one must be very close to <span class="math inline">\(-10^{-8}\)</span>. Is this what your function returns? We will come back to this problem when we discuss rounding errors.</p>
+</div>
+<div class="thm exercise style-definition" id="exercise-2-14"><p><span class="thm-head">Exercise 2.14.</span> To compute <span class="math inline">\(\sqrt{a}\)</span> for <span class="math inline">\(a&gt;0\)</span>, the ancient Babylonians used the iterations <span class="math display">\[
+x_{k+1}=\frac{1}{2}\left(x_k+\frac{a}{x_k}\right),\quad k=0,1,2,\ldots,\quad x_0=a.
+\]</span> Write a function that performs these iterations until two consecutive values <span class="math inline">\(x_k\)</span> and <span class="math inline">\(x_{k+1}\)</span> coincide (to be safe, also stop after, say, 100 iterations), and prints all the iterates. Run it for <span class="math inline">\(a=2\)</span> and compare the iterates with <code>math.sqrt(2)</code>. How does the number of correct digits change from one iteration to the next one? (This is a special case of Newton’s method, one of the central topics of our course.)</p>
+</div>
+<div class="thm exercise style-definition" id="exercise-2-15"><p><span class="thm-head">Exercise 2.15.</span> Write a function that returns the factorization of a given natural number <span class="math inline">\(n\)</span> into prime factors. What is the largest prime factor of 600851475143?</p>
+</div>
+<p><strong>More involved.</strong></p>
+<div class="thm exercise style-definition" id="exercise-2-16"><p><span class="thm-head">Exercise 2.16.</span> Besides the leftpoint rule, consider the <em>midpoint rule</em> and the <em>trapezoidal rule</em> <span class="math display">\[
+M_n=h\sum_{j=0}^{n-1}f\left(x_j+\frac{h}{2}\right),\qquad T_n=h\left(\frac{f(x_0)}{2}+f(x_1)+\ldots+f(x_{n-1})+\frac{f(x_n)}{2}\right),
+\]</span> with the same notation as in Example <a href="#ex:2:leftpoint">2.1</a>. Write the functions <code>midpoint</code> and <code>trapezoid</code> with the same parameters as <code>leftpoint</code>. For <span class="math inline">\(\int_0^1e^{-x^2}\D x\)</span> make a table of the errors of <span class="math inline">\(L_n\)</span>, <span class="math inline">\(M_n\)</span>, <span class="math inline">\(T_n\)</span> for <span class="math inline">\(n=10,100,1000,10000\)</span>, similar to the one in Section 1 (the exact value is given there). How does the error of <span class="math inline">\(M_n\)</span> and <span class="math inline">\(T_n\)</span> change when <span class="math inline">\(n\)</span> is increased ten times? Find a constant <span class="math inline">\(C\)</span> such that the error of <span class="math inline">\(M_n\)</span> is approximately <span class="math inline">\(C/n^2\)</span>. Finally, look again at the second line of the output in Example <a href="#ex:2:leftpoint">2.1</a>: why does the leftpoint rule work so much better for <span class="math inline">\(\int_0^\pi\sin x\D x\)</span>?</p>
+</div>
+<div class="thm exercise style-definition" id="exercise-2-17"><p><span class="thm-head">Exercise 2.17.</span> Write computer code that will draw random numbers from the interval <span class="math inline">\([0,1)\)</span>, distributed uniformly (use the function <code>random.random()</code> from the module <code>random</code>; reading the documentation would help), until the sum of the numbers that you draw is greater than 1. Keep track of how many numbers you draw. Then write a loop that repeats this process many times. On average, how many numbers do you have to draw until your sum is larger than 1? (You should do this more than 1,000,000 times to get a good average, and the number that you get should be familiar!)</p>
+</div>
+<div class="thm exercise style-definition" id="exercise-2-18"><p><span class="thm-head">Exercise 2.18.</span> Two integers <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span> are <em>relatively prime</em> if <span class="math inline">\(\gcd(a,b)=1\)</span>. Try to make a good guess for the answer to the following question: “What is the probability that two randomly chosen natural numbers <span class="math inline">\(a\)</span>, <span class="math inline">\(b\)</span> are relatively prime?” For this, using your function from Exercise <a href="#exer:2:gcd">2.9</a>, compute the proportion of relatively prime pairs among all the pairs <span class="math inline">\(1\leq a,b\leq n\)</span> for <span class="math inline">\(n=10,100,1000\)</span>. For larger <span class="math inline">\(n\)</span> checking all the <span class="math inline">\(n^2\)</span> pairs takes too long, so instead choose a large number (say, <span class="math inline">\(10^6\)</span>) of random pairs with <code>random.randint(1, n)</code> for <span class="math inline">\(n=10^4, 10^6, 10^9\)</span>. Can you recognize the limit? (<em>Hint:</em> it involves <span class="math inline">\(\pi\)</span>.)</p>
+</div>
+<div class="thm exercise style-definition" id="exercise-2-19"><p><span class="thm-head">Exercise 2.19.</span> For the Fibonacci numbers, if you used the most natural approach, the complexity of your algorithm in Exercise <a href="#exer:2:fib">2.4</a> (for now think about complexity as an approximate number of elementary operations, i.e., multiplications or additions, required for the algorithm to be performed before it produces the result) should be proportional to <span class="math inline">\(m\)</span>. That is, if one needs the <span class="math inline">\(m\)</span>-th Fibonacci number then approximately <span class="math inline">\(m\)</span> elementary operations are required. Can you do better?</p>
+<p><em>Hint:</em> A pair of adjacent Fibonacci numbers can be obtained from the previous pair by multiplication by the matrix <span class="math display">\[
+\begin{bmatrix}
+  1 &amp; 1 \\
+  1 &amp; 0
+\end{bmatrix},\quad\text{namely},\quad
+\begin{bmatrix}
+  F_{n+1} \\
+  F_n
+\end{bmatrix}
+=\begin{bmatrix}
+  1 &amp; 1 \\
+  1 &amp; 0
+\end{bmatrix}
+\begin{bmatrix}
+  F_{n} \\
+  F_{n-1}
+\end{bmatrix}.
+\]</span> That is, the problem boils down to the exponentiation of a matrix. Now see Example <a href="#ex:2:power">2.3</a> and use the function <code>matrix_product</code> from Example <a href="#ex:2:matrix">2.2</a> (what should play the role of the number 1?).</p>
+<p>Demonstrate convincingly that your solution is fast (at least for large <span class="math inline">\(m\)</span>). What is the complexity of your algorithm?</p>
+</div>
+</article>
+<nav class="pager" aria-label="More sections"><a class="prev" href="01.html"><span class="dir">Previous</span><span class="pt"><span class="pnum">1</span> Introduction to Python. Part I</span></a><a class="next" href="03.html"><span class="dir">Next</span><span class="pt"><span class="pnum">3</span> Bisection. Theory and implementation</span></a></nav>
+</main>
+</div>
+<a class="to-top" href="#" aria-label="Back to top">&uarr;</a>
+</body>
+</html>
