@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Section 8: Computational complexity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,500;1,400;1,500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="style.css">
+<script>
+window.MathJax = {
+  loader: {load: ['[tex]/tagformat']},
+  tex: {
+    packages: {'[+]': ['tagformat']},
+    tags: 'ams',
+    tagformat: {number: (n) => '8.' + n},
+    macros: {
+      D: '\\mathrm{d}',
+      Div: '\\operatorname{div}',
+      E: ['\\expectation\\left(#1\\right)', 1],
+      I: '\\mathrm{i}',
+      Im: '\\mathop{\\mathrm{Im}}\\nolimits',
+      Ind: ['\\,\\mathbf{1}_{#1}', 1],
+      Int: '\\operatorname{int}',
+      N: '\\mathbf{N}',
+      Poi: ['\\poisson\\left(#1\\right)', 1],
+      Pr: ['\\probability\\left\\{#1\\right\\}', 1],
+      R: '\\mathbf{R}',
+      Re: '\\mathop{\\mathrm{Re}}\\nolimits',
+      Tr: '\\operatorname{tr}',
+      V: ['{\\mathbf{#1}}', 1],
+      Var: ['\\,\\mathrm{Var}\\left(#1\\right)', 1],
+      arctanh: '\\operatorname{arctanh}',
+      bd: '\\operatorname{bd}',
+      bs: ['{\\boldsymbol{#1}}', 1],
+      code: ['\\texttt{#1}', 1],
+      curl: '\\operatorname{curl}',
+      diag: '\\operatorname{diag}',
+      diam: '\\operatorname{diam}',
+      erf: '\\operatorname{erf}',
+      expectation: '\\operatorname{E}',
+      grad: '\\operatorname{grad}',
+      labelitemi: '$\\bullet$',
+      overbar: ['\\mkern 3.5mu\\overline{\\mkern-2mu#1\\mkern-3mu}\\mkern 3.5mu', 1],
+      pdt: '\\partial_t',
+      poisson: '\\operatorname{Poisson}',
+      probability: '\\operatorname{P}',
+      rank: '\\operatorname{rank}',
+      sign: '\\operatorname{sgn}'
+    }
+  }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<script defer src="notes.js"></script>
+</head>
+<body>
+<div class="progress" aria-hidden="true"><span></span></div>
+<header class="topbar">
+  <a class="course-name" href="index.html">Math 488/688: Numerical Analysis</a>
+  <a class="all-sections" href="index.html">All sections</a>
+</header>
+<div class="layout">
+<aside class="sidetoc" aria-label="On this page">
+  <p class="sidetoc-title">Section 8</p>
+  <ol>
+<li><a href="#sec8-1"><span class="tnum">8.1</span><span class="ttl">Counting the operations</span></a></li>
+<li><a href="#sec8-2"><span class="tnum">8.2</span><span class="ttl">Computational time complexity</span></a></li>
+<li><a href="#sec8-3"><span class="tnum">8.3</span><span class="ttl">One simple example: fast exponentiation and binary numbers</span></a></li>
+<li><a href="#sec8-4"><span class="tnum">8.4</span><span class="ttl">Exercises</span></a></li>
+  </ol>
+</aside>
+<main>
+<header class="hero">
+  <span class="bignum" aria-hidden="true">8</span>
+  <div class="hero-text">
+    <p class="kicker">Section</p>
+    <h1>Computational complexity</h1>
+    <p class="byline">Math 488/688: Numerical Analysis<br>e-mail: <a href="mailto:artem.novozhilov@ndsu.edu">artem.novozhilov@ndsu.edu</a>. Fall 2026</p>
+  </div>
+  <svg class="emblem" viewBox="0 0 160 160" aria-hidden="true">
+<line x1="8" y1="112" x2="156" y2="112"/>
+<polyline class="curve" points="20.0,156.0 21.2,156.0 22.4,156.0 23.6,155.9 24.8,155.9 26.0,155.8 27.2,155.7 28.4,155.6 29.6,155.4 30.8,155.3 32.0,155.1 33.2,154.9 34.4,154.7 35.6,154.5 36.8,154.3 38.0,154.0 39.2,153.7 40.4,153.5 41.6,153.1 42.8,152.8 44.0,152.5 45.2,152.1 46.4,151.7 47.6,151.3 48.8,150.9 50.0,150.5 51.2,150.1 52.4,149.6 53.6,149.1 54.8,148.6 56.0,148.1 57.2,147.5 58.4,147.0 59.6,146.4 60.8,145.8 62.0,145.2 63.2,144.6 64.4,144.0 65.6,143.3 66.8,142.6 68.0,141.9 69.2,141.2 70.4,140.5 71.6,139.7 72.8,139.0 74.0,138.2 75.2,137.4 76.4,136.6 77.6,135.7 78.8,134.9 80.0,134.0 81.2,133.1 82.4,132.2 83.6,131.3 84.8,130.3 86.0,129.4 87.2,128.4 88.4,127.4 89.6,126.4 90.8,125.4 92.0,124.3 93.2,123.3 94.4,122.2 95.6,121.1 96.8,120.0 98.0,118.8 99.2,117.7 100.4,116.5 101.6,115.3 102.8,114.1 104.0,112.9 105.2,111.6 106.4,110.4 107.6,109.1 108.8,107.8 110.0,106.5 111.2,105.2 112.4,103.8 113.6,102.5 114.8,101.1 116.0,99.7 117.2,98.3 118.4,96.8 119.6,95.4 120.8,93.9 122.0,92.4 123.2,90.9 124.4,89.4 125.6,87.9 126.8,86.3 128.0,84.7 129.2,83.1 130.4,81.5 131.6,79.9 132.8,78.2 134.0,76.6 135.2,74.9 136.4,73.2 137.6,71.5 138.8,69.8 140.0,68.0 141.2,66.2 142.4,64.4 143.6,62.6 144.8,60.8 146.0,59.0 147.2,57.1 148.4,55.2 149.6,53.4 150.8,51.4 152.0,49.5"/>
+<line class="dash" x1="140" y1="112" x2="140" y2="68"/>
+<line class="ray" x1="101.0" y1="125.2" x2="152.0" y2="50.4"/>
+<circle class="pt" cx="140" cy="68" r="3.5"/><circle class="pt" cx="110" cy="112" r="3"/>
+<text x="134" y="132">x₀</text><text x="92" y="132">x₁</text>
+</svg>
+</header>
+<nav class="toc" aria-label="Contents">
+  <p class="toc-title">In this section</p>
+  <ol>
+<li><a href="#sec8-1"><span class="tnum">8.1</span><span class="ttl">Counting the operations</span></a></li>
+<li><a href="#sec8-2"><span class="tnum">8.2</span><span class="ttl">Computational time complexity</span></a></li>
+<li><a href="#sec8-3"><span class="tnum">8.3</span><span class="ttl">One simple example: fast exponentiation and binary numbers</span></a></li>
+<li><a href="#sec8-4"><span class="tnum">8.4</span><span class="ttl">Exercises</span></a></li>
+  </ol>
+</nav>
+<article class="notes">
+<p>In the last section I showed that the code that implements Cramer’s method runs very slowly even for small <span class="math inline">\(n\)</span>, namely, for <span class="math inline">\(n=9\)</span>. Gaussian elimination, contrary to this, was able to solve a system of <span class="math inline">\(300\)</span> equations with <span class="math inline">\(300\)</span> unknowns in quite a manageable time. The goal of this section is to give a precise mathematical formalization of this phenomenon.</p>
+<h2 id="sec8-1"><span class="secnum">8.1</span><span class="sectitle">Counting the operations</span></h2>
+<p>Since the time required for a certain algorithm to run depends on the details of the hardware we use, it is more representative to count the number of some elementary operations, such as multiplications, divisions, additions, and subtractions. Strictly speaking, these operations do not take the same time (on modern processors additions and multiplications take about the same time, but divisions are noticeably slower), and sometimes they should be counted separately; here, however, I will count everything together.</p>
+<p>I start with Cramer’s method and recall that to solve a system of <span class="math inline">\(n\)</span> equations with <span class="math inline">\(n\)</span> unknowns I need to calculate <span class="math inline">\(n+1\)</span> determinants. Let <span class="math inline">\(D_n\)</span> be the number of elementary operations that are necessary to calculate the determinant of an <span class="math inline">\(n\times n\)</span> matrix. Clearly I have that <span class="math inline">\(D_2=2+1=3\)</span>, i.e., I need to perform two multiplications and one subtraction. Now, to compute <span class="math inline">\(D_3\)</span>, I recall that I need to compute 3 determinants of <span class="math inline">\(2\times 2\)</span> matrices, multiply them by the elements of the first row, and make two additions/subtractions, in other words, <span class="math display">\[
+D_3=3D_2+3+2.
+\]</span> Generalizing to an arbitrary <span class="math inline">\(n\)</span>, I get <span class="math display">\[
+D_n=nD_{n-1}+n+(n-1)=nD_{n-1}+2n-1, \quad D_2=3,
+\]</span> which is a linear difference equation, which in principle can be solved exactly. Since at this point I do not care too much about the exact result (but see Exercise <a href="#exer8:e">8.1</a>), I consider instead a smaller number <span class="math inline">\(d_n\)</span>, for which <span class="math display">\[
+d_n = n d_{n-1},\quad d_2=3,
+\]</span> such that clearly <span class="math inline">\(d_n&lt;D_n\)</span> for any <span class="math inline">\(n&gt;2\)</span> (that is, I am computing a very conservative lower estimate for <span class="math inline">\(D_n\)</span>).</p>
+<p>Since <span class="math display">\[
+d_n=nd_{n-1}=n(n-1)d_{n-2}=n(n-1)(n-2)\ldots4\cdot 3\cdot d_2&gt;n(n-1)\ldots 4\cdot 3\cdot 2=n!,
+\]</span> I can very conservatively estimate that <span class="math display">\[
+D_n&gt; n!,
+\]</span> and hence Cramer’s method requires a ridiculous number of elementary operations, at least <span class="math display">\[
+T_{\textup{Cramer}}=(n+1)n!=(n+1)!
+\]</span> (a more careful analysis shows that this number is actually close to <span class="math inline">\(e(n+1)!\)</span>, see Exercise <a href="#exer8:e">8.1</a>).</p>
+<p>Now let me count the same operations for Gaussian elimination with back substitution. Recall that this method consists of two steps. First I transform <span class="math inline">\([\bs A\mid \bs b]\)</span> into <span class="math inline">\([\bs U\mid \bs b']\)</span>, where <span class="math inline">\(\bs U\)</span> is an upper triangular matrix. After this, I perform back substitution computing <span class="math inline">\(x_n,x_{n-1},\ldots, x_1\)</span>.</p>
+<p>I start with the first step, which is done sequentially on <span class="math inline">\(n-1\)</span> rows (I do not need to do anything when I get to the last row). Assume that at step <span class="math inline">\(i\)</span> I have <span class="math display">\[
+\left[\begin{array}{cccccc|c}
+            a_{11} &amp; a_{12} &amp;\ldots&amp; \ldots &amp; \ldots &amp; a_{1n} &amp; b_1\\
+            0 &amp; a_{22} &amp; \ldots&amp;\ldots &amp; \ldots &amp; a_{2n} &amp; b_2\\
+            0 &amp; 0 &amp; \ddots &amp; &amp; &amp;&amp; \vdots\\
+           \vdots &amp; &amp;&amp; a_{ii} &amp; \ldots &amp; a_{in} &amp; b_i \\
+            \vdots &amp; &amp; &amp; a_{i+1,i} &amp; \ldots &amp; a_{i+1,n} &amp; b_{i+1}\\
+            &amp; &amp;&amp; \vdots &amp; &amp;\vdots &amp; \vdots\\
+            0 &amp;&amp; \ldots &amp; a_{ni} &amp; \ldots &amp; a_{nn} &amp; b_n\\
+          \end{array}\right].
+\]</span> How many operations do I need to perform to move to step <span class="math inline">\(i+1\)</span>? Recall the formulas from Section 7. First, I compute the <span class="math inline">\(n-i\)</span> multipliers <span class="math inline">\(m_{ji}=a_{ji}/a_{ii}\)</span>, <span class="math inline">\(j=i+1,\ldots,n\)</span>, which requires <span class="math inline">\(n-i\)</span> divisions. Next, I modify the elements of the <span class="math inline">\((n-i)\times(n-i)\)</span> submatrix of <span class="math inline">\(\bs A\)</span> composed of the rows and columns with indexes <span class="math inline">\(i+1,\ldots,n\)</span>: each new element <span class="math inline">\(a'_{jk}=a_{jk}-m_{ji}a_{ik}\)</span> requires one multiplication and one subtraction, hence <span class="math inline">\((n-i)^2\)</span> multiplications and <span class="math inline">\((n-i)^2\)</span> subtractions. Finally, for the <span class="math inline">\(n-i\)</span> elements <span class="math inline">\(b'_j=b_j-m_{ji}b_i\)</span> of vector <span class="math inline">\(\bs b\)</span> I need <span class="math inline">\(n-i\)</span> multiplications and <span class="math inline">\(n-i\)</span> subtractions. Summarizing, multiplications/divisions are performed for the forward step of Gaussian elimination <span class="math display">\[
+M_f=\sum_{i=1}^{n-1}\left((n-i)^2+2(n-i)\right)
+\]</span> times, and additions/subtractions are performed <span class="math display">\[
+A_f=\sum_{i=1}^{n-1}\left((n-i)^2+(n-i)\right)
+\]</span> times. These sums can be calculated by recalling that <span class="math display">\[
+\sum_{k=1}^n k=\frac{n(n+1)}{2}\,,\quad\sum_{k=1}^n k^2=\frac{n(n+1)(2n+1)}{6}\,.
+\]</span> I find that <span class="math display">\[
+M_f=\frac{2n^3+3n^2-5n}{6}\,,\quad A_f=\frac{n^3-n}{3}\,.
+\]</span></p>
+<p>For the backward step first I need one division to find <span class="math inline">\(x_n\)</span>, then one multiplication, one subtraction, and one division to find <span class="math inline">\(x_{n-1}\)</span>, two multiplications, two subtractions, and one division to find <span class="math inline">\(x_{n-2}\)</span>, and so on, in total <span class="math display">\[
+M_b=n+\sum_{i=1}^{n-1}i=\frac{n(n+1)}{2}
+\]</span> multiplications and divisions, and <span class="math display">\[
+A_b=\sum_{i=1}^{n-1}i=\frac{n(n-1)}{2}
+\]</span> additions/subtractions.</p>
+<p>Finally, the total numbers are <span class="math display">\[
+M_t=M_f+M_b=\frac{n(n^2+3n-1)}{3}\,,\quad A_t=A_f+A_b=\frac{n(2n^2+3n-5)}{6}\,,
+\]</span> and the total number of operations is <span class="math display">\[
+T_{\textup{Gauss}}=M_t+A_t=\frac{2n^3}{3}+\frac{3n^2}{2}-\frac{7n}{6}\,.
+\]</span> Clearly for sufficiently large <span class="math inline">\(n\)</span> <span class="math display">\[
+T_{\textup{Gauss}}\approx\frac{2n^3}{3}\,.
+\]</span></p>
+<p>As an example, let me take <span class="math inline">\(n=100\)</span>. A modern desktop computer can perform about <span class="math inline">\(10^{12}\)</span> floating-point operations per second (one says that it performs at 1 teraflops; FLOP stands for a <em>floating-point operation</em>, and FLOPS for floating-point operations per second). For Gaussian elimination I get <span class="math display">\[
+T_{\textup{Gauss}}(100)=681550
+\]</span> operations, which gives me the time of about <span class="math inline">\(7\cdot10^{-7}\)</span> seconds.</p>
+<p>Now for Cramer’s method I find <span class="math display">\[
+T_{\textup{Cramer}}(100)= 101!\approx 9.426\cdot 10^{159}
+\]</span> operations. Even the fastest supercomputers of today, which perform at more than <span class="math inline">\(10^{18}\)</span> operations per second (exaflops), would need approximately <span class="math inline">\(3\cdot 10^{134}\)</span> years for this computation (the best estimate we have nowadays for the age of our Universe is about <span class="math inline">\(13.8\cdot 10^9\)</span> years). So, jokes aside, one should never (absolutely never, even for <span class="math inline">\(n=2\)</span>) use Cramer’s method to solve a system of linear algebraic equations.</p>
+<p>The formula for <span class="math inline">\(T_{\textup{Gauss}}\)</span> can also be checked experimentally. If the time is proportional to the number of operations, then <span class="math inline">\(t(n)\approx Cn^3\)</span> for large <span class="math inline">\(n\)</span>, hence <span class="math inline">\(\log t\approx \log C+3\log n\)</span>, and the points <span class="math inline">\((\log n,\log t)\)</span> should lie close to a straight line with the slope 3. This is the same idea as for the order of convergence in Section 4.5. I continue with the code from Section 7 (the functions <code>gauss_method</code> and <code>random_system</code>):</p>
+<pre class="code script"><code><span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="n">sizes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">400</span><span class="p">]</span>
+<span class="n">times</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">sizes</span><span class="p">:</span>
+    <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x_hat</span> <span class="o">=</span> <span class="n">random_system</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+    <span class="n">gauss_method</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+    <span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+    <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;n = </span><span class="si">{</span><span class="n">n</span><span class="si">:</span><span class="s2">3d</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+
+<span class="n">log_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">sizes</span><span class="p">]</span>
+<span class="n">log_times</span> <span class="o">=</span> <span class="p">[</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">times</span><span class="p">]</span>
+<span class="n">slope</span><span class="p">,</span> <span class="n">shift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">log_sizes</span><span class="p">,</span> <span class="n">log_times</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;slope = </span><span class="si">{</span><span class="n">slope</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></code></pre>
+<pre class="pyout"><code>n =  50: 0.002 seconds
+n = 100: 0.024 seconds
+n = 200: 0.160 seconds
+n = 400: 0.891 seconds
+slope = 2.97</code></pre>
+<p>The slope is close to 3, as predicted. For small <span class="math inline">\(n\)</span> the number of operations is not the only thing that matters (the program also spends time on calling functions, creating lists, etc.), which is one of the reasons why the slope is not exactly 3.</p>
+<h2 id="sec8-2"><span class="secnum">8.2</span><span class="sectitle">Computational time complexity</span></h2>
+<p>What I estimated in the previous subsection is known as the computational time complexity of an algorithm. In general, <em>computational complexity</em> of an algorithm is the amount of resources required to run it. Two main resources are memory and time. I did not care much about memory (I invite you to think about how much memory each algorithm would require). The time complexity is usually counted in elementary operations (which could be multiplications, divisions, additions, subtractions, which we counted, and also assignments and function calls within the given code) versus the size of the input. In our case the input is specified by the number of unknowns <span class="math inline">\(n\)</span>.</p>
+<p>The operations that I did not count can be important. For instance, in Section 7 solving a <span class="math inline">\(9\times 9\)</span> system by Cramer’s method took about 3 seconds, and solving a <span class="math inline">\(300\times 300\)</span> system by Gaussian elimination took about 0.3 seconds, although the numbers of arithmetic operations are comparable: about <span class="math inline">\(e\cdot 10!\approx 10^7\)</span> and <span class="math inline">\(T_{\textup{Gauss}}(300)\approx 1.8\cdot 10^7\)</span>, respectively. The reason is that my recursive function <code>det</code> spends most of its time on something that I did not count: it calls itself millions of times and creates a new list (a submatrix) at each call.</p>
+<p>In the majority of cases the exact number of operations is difficult (or even impossible) to calculate, and relatively small <span class="math inline">\(n\)</span> are irrelevant; therefore, frequently, time complexity is computed <em>asymptotically</em>, in terms of the “big O” notation.</p>
+<div class="thm definition style-plain" id="definition-8-1"><p><span class="thm-head">Definition 8.1.</span> Let <span class="math inline">\(f,g\)</span> be two real valued positive functions of integer argument <span class="math inline">\(n\)</span>. We say that <span class="math display">\[
+f(n)=\mathcal O\bigl(g(n)\bigr)
+\]</span> (this reads “big O of <span class="math inline">\(g(n)\)</span>”), if <span class="math display">\[
+f(n)\leq Mg(n)
+\]</span> for all <span class="math inline">\(n\geq n_0\)</span> and some constants <span class="math inline">\(M\)</span> and <span class="math inline">\(n_0\)</span>.</p>
+</div>
+<p>So when someone says that the given algorithm has quadratic complexity, or big O of <span class="math inline">\(n^2\)</span>, it means that for sufficiently large <span class="math inline">\(n\)</span> the number of operations that need to be performed for the algorithm to end is bounded above by the expression <span class="math inline">\(Mn^2\)</span>.</p>
+<p>Using this definition I can say that Gaussian elimination has complexity <span class="math inline">\(\mathcal O(n^3)\)</span> (since lower powers of <span class="math inline">\(n\)</span> do not contribute for large <span class="math inline">\(n\)</span>), or cubic complexity, whereas Cramer’s method has complexity <span class="math inline">\(\mathcal O((n+1)!)\)</span>, or factorial complexity.</p>
+<p>A few words on terminology. An <span class="math inline">\(\mathcal O(1)\)</span> algorithm is said to have constant time complexity, <span class="math inline">\(\mathcal O(\log n)\)</span> — logarithmic complexity, <span class="math inline">\(\mathcal O(n)\)</span> — linear complexity, <span class="math inline">\(\mathcal O(n^k)\)</span> — polynomial complexity, <span class="math inline">\(\mathcal O(2^n)\)</span> — exponential complexity.</p>
+<p>Before I finish this subsection, I would like to make two important remarks. First, if there are two algorithms, one, say, <span class="math inline">\(\mathcal O(n^2)\)</span> and the other one <span class="math inline">\(\mathcal O(n^3)\)</span>, it <em>does not</em> mean that the latter algorithm will perform slower in reality. Remember that the big O notation is asymptotic, and that for fixed finite <span class="math inline">\(n\)</span> the constant <span class="math inline">\(M\)</span> could be much larger for the quadratic algorithm than for the cubic one (<span class="math inline">\(1000\cdot10^2\)</span> is of course bigger than <span class="math inline">\(10\cdot 10^3\)</span>). Hence, while the asymptotic estimate of time complexity is important, for actual algorithms very often the exact number of elementary operations should be calculated or estimated, as it was done for Gaussian elimination and Cramer’s method.</p>
+<p>Second, the asymptotic complexity, among other things, shows how much one can increase the size of the input <span class="math inline">\(n\)</span> if the computational power grows (which has been happening since the creation of computers). Assume that we have <span class="math inline">\(R\)</span> resources and we work on a problem that has exponential complexity <span class="math inline">\(\mathcal O(2^n)\)</span>, and the largest <span class="math inline">\(n\)</span> we can afford to run is <span class="math inline">\(n=N\)</span>, so that <span class="math inline">\(R=2^N\)</span>. Assume also that our resources doubled: <span class="math inline">\(R'=2R\)</span>. How much can we increase <span class="math inline">\(N\)</span>? Since <span class="math inline">\(R'=2R=2\cdot2^N=2^{N+1}\)</span>, for an algorithm with exponential complexity doubling the resources allows increasing the size of the input by 1! For a quadratic algorithm the same reasoning yields <span class="math inline">\(R'=2R=2N^2=(\sqrt{2}N)^2\)</span>, i.e., now we can increase our input by the factor <span class="math inline">\(\sqrt{2}\approx 1.41\)</span>, and for a cubic algorithm, such as Gaussian elimination, by the factor <span class="math inline">\(\sqrt[3]{2}\approx 1.26\)</span>. Convince yourself that for algorithms with logarithmic complexity I can square the size of the input, i.e., <span class="math inline">\(N'=N^2\)</span>. These simple informal arguments should convince you that developing algorithms with lower asymptotic time complexity is very important, even if they run slower for sufficiently small <span class="math inline">\(n\)</span>.</p>
+<h2 id="sec8-3"><span class="secnum">8.3</span><span class="sectitle">One simple example: fast exponentiation and binary numbers</span></h2>
+<p>Before moving forward with numerical linear algebra, let me return to one example from Section 2, which shows how a better algorithm gives a very impressive improvement over a naive (but straightforward) approach. Recall that in Example 2.3 I computed <span class="math inline">\(a^n\)</span> for a real number <span class="math inline">\(a\)</span> and a natural number <span class="math inline">\(n\)</span> in two ways: the function <code>power_1</code> multiplies <span class="math inline">\(a\)</span> by itself <span class="math inline">\(n\)</span> times, and the function <code>power_2</code> uses repeated squaring, and the latter was more than ten times faster for <span class="math inline">\(n=3147\)</span>. Now I can explain this precisely.</p>
+<p>The function <code>power_1</code> requires <span class="math inline">\(n\)</span> multiplications, and therefore, according to the discussion above, the complexity of this algorithm is <span class="math inline">\(\mathcal O(n)\)</span>.</p>
+<p>The idea of <code>power_2</code> is the following. If <span class="math inline">\(n\)</span> is a power of 2, say, <span class="math inline">\(n=16=2^4\)</span>, then the chain of squarings <span class="math display">\[
+a\to a^2=a\cdot a\to a^4=a^2\cdot a^2\to a^8=a^4\cdot a^4\to a^{16}=a^8\cdot a^8
+\]</span> requires not 15, but only 4 multiplications: knowing <span class="math inline">\(a^{2^j}\)</span> I compute <span class="math inline">\(a^{2^{j+1}}=a^{2^j}\cdot a^{2^j}\)</span> in one operation. What if <span class="math inline">\(n\)</span> is not a power of 2? Then I use the <em>binary representation</em> of <span class="math inline">\(n\)</span>: <span class="math display">\[
+n=b_k2^{k}+b_{k-1}2^{k-1}+\ldots+b_12^1+b_02^0=\overline{b_kb_{k-1}\ldots b_1b_0}_2,\quad b_j\in\{0,1\},\quad b_k=1,
+\]</span> which is exactly the same as the usual decimal representation, but with the base 2 instead of 10, and only two digits, 0 and 1, called <em>bits</em>. For instance, <span class="math inline">\(11=1\cdot2^3+0\cdot 2^2+1\cdot 2^1+1\cdot 2^0=\overline{1011}_2\)</span>. The digits can be computed by sequential division by 2 and recording the remainders: <span class="math inline">\(b_0\)</span> is the remainder of the division of <span class="math inline">\(n\)</span> by 2, <span class="math inline">\(b_1\)</span> is the remainder of the division of <span class="math inline">\(\lfloor n/2\rfloor\)</span> by 2, etc. Here is a function that does this.</p>
+<pre class="code script"><code><span class="k">def</span><span class="w"> </span><span class="nf">binary_digits</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the list [b_k, ..., b_1, b_0] of the binary digits of the natural number n.&quot;&quot;&quot;</span>
+    <span class="n">digits</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">while</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">digits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span>    <span class="c1"># the remainder is the next digit, starting with b_0</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">n</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="k">return</span> <span class="n">digits</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>         <span class="c1"># reversed: the highest digit b_k first</span></code></pre>
+<pre class="code session"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">binary_digits</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span>
+<span class="go">[1, 0, 1, 1]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">binary_digits</span><span class="p">(</span><span class="mi">3147</span><span class="p">)</span>
+<span class="go">[1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">bin</span><span class="p">(</span><span class="mi">3147</span><span class="p">)</span>
+<span class="go">&#39;0b110001001011&#39;</span></code></pre>
+<p>The built-in function <code>bin</code> returns the binary representation of an integer as a string, with the prefix <code>0b</code>.</p>
+<p>Now, to compute <span class="math inline">\(a^n\)</span> I actually compute <span class="math display">\[
+a^n=a^{\sum_{j=0}^k b_j 2^j}=\prod_{j=0}^{k}\left(a^{2^j}\right)^{b_j},
+\]</span> that is, I multiply together those of the numbers <span class="math inline">\(a,a^2,a^{2^2},\ldots,a^{2^k}\)</span> for which <span class="math inline">\(b_j=1\)</span>. I need <span class="math inline">\(k\)</span> multiplications to compute <span class="math inline">\(a^2,a^{2^2},\ldots,a^{2^k}\)</span>, and, in the worst possible case (when all the <span class="math inline">\(k+1\)</span> digits of <span class="math inline">\(n\)</span> are equal to 1), <span class="math inline">\(k\)</span> more multiplications to compute the final product. Since <span class="math inline">\(2^k\leq n&lt;2^{k+1}\)</span>, I have <span class="math inline">\(k=\lfloor\log_2 n\rfloor\)</span>, and the number of multiplications is at most <span class="math inline">\(2\lfloor\log_2 n\rfloor\)</span>. Hence this algorithm has logarithmic complexity <span class="math inline">\(\mathcal O(\log n)\)</span>, which is a huge improvement over the linear complexity of naive exponentiation. (The function <code>power_2</code> from Section 2 does exactly this, see the hint there; it also performs one unnecessary multiplication by 1 at the beginning, so it needs at most <span class="math inline">\(2\lfloor\log_2 n\rfloor+1\)</span> multiplications.)</p>
+<p>In the spirit of this section, instead of measuring the time, let me count the multiplications directly, by adding a counter to the functions from Section 2:</p>
+<pre class="code script"><code><span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">power_1_count</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a**n computed as in power_1, and the number of multiplications.&quot;&quot;&quot;</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">c</span> <span class="o">*=</span> <span class="n">a</span>
+        <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">c</span><span class="p">,</span> <span class="n">count</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">power_2_count</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a**n computed as in power_2, and the number of multiplications.&quot;&quot;&quot;</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">a</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">while</span> <span class="n">n</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">n</span> <span class="o">//</span> <span class="mi">2</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">c</span> <span class="o">*</span> <span class="n">c</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">d</span> <span class="o">*</span> <span class="n">c</span>
+        <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>          <span class="c1"># exactly one multiplication at each step</span>
+    <span class="k">return</span> <span class="n">d</span><span class="p">,</span> <span class="n">count</span>
+
+
+<span class="n">n</span> <span class="o">=</span> <span class="mi">3147</span>
+<span class="n">result_1</span><span class="p">,</span> <span class="n">count_1</span> <span class="o">=</span> <span class="n">power_1_count</span><span class="p">(</span><span class="mi">23</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+<span class="n">result_2</span><span class="p">,</span> <span class="n">count_2</span> <span class="o">=</span> <span class="n">power_2_count</span><span class="p">(</span><span class="mi">23</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">result_1</span> <span class="o">==</span> <span class="n">result_2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;power_1: </span><span class="si">{</span><span class="n">count_1</span><span class="si">}</span><span class="s2"> multiplications&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;power_2: </span><span class="si">{</span><span class="n">count_2</span><span class="si">}</span><span class="s2"> multiplications&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;the bound 2 floor(log2 n) + 1 = </span><span class="si">{</span><span class="mi">2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">n</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></code></pre>
+<pre class="pyout"><code>True
+power_1: 3147 multiplications
+power_2: 17 multiplications
+the bound 2 floor(log2 n) + 1 = 23</code></pre>
+<p>Here <span class="math inline">\(3147=\overline{110001001011}_2\)</span>, so <span class="math inline">\(k=11\)</span>, and <code>power_2</code> performs <span class="math inline">\(k=11\)</span> squarings and 6 multiplications, one for each digit 1. So the number of multiplications is reduced by the factor of about 185. Why then was <code>power_2</code> “only” about 14 times faster in Section 2? Because the multiplications of large integers are not elementary operations of the same cost: in <code>power_2</code> most multiplications involve numbers with thousands of digits (recall that <span class="math inline">\(23^{3147}\)</span> has 4286 digits), whereas in <code>power_1</code> one of the factors is always 23. This is one more illustration that one should always keep in mind what exactly is counted.</p>
+<p>I think that this very simple example should convince you that spending time on improving an algorithm is not a waste of time.</p>
+<h2 id="sec8-4"><span class="secnum">8.4</span><span class="sectitle">Exercises</span></h2>
+<div class="thm exercise style-definition" id="exer8:e"><p><span class="thm-head">Exercise 8.1.</span> Let <span class="math inline">\(E_n=D_n/n!\)</span>, where <span class="math inline">\(D_n\)</span> is the number of operations to compute an <span class="math inline">\(n\times n\)</span> determinant from the beginning of this section. Show that <span class="math display">\[
+E_n=E_{n-1}+\frac{2n-1}{n!}\,,\quad E_2=\frac 32\,,
+\]</span> and deduce that <span class="math inline">\(E_n\to e\)</span> as <span class="math inline">\(n\to\infty\)</span>. (<em>Hint:</em> recall that <span class="math inline">\(e=\sum_{k=0}^\infty 1/k!\)</span>.) Conclude that the number of operations for Cramer’s method is approximately <span class="math inline">\(e(n+1)!\)</span> for large <span class="math inline">\(n\)</span>.</p>
+</div>
+<div class="thm exercise style-definition" id="exercise-8-2"><p><span class="thm-head">Exercise 8.2.</span> For two <span class="math inline">\(n\times n\)</span> matrices, count the number of multiplications and additions performed by the function <code>matrix_product</code> from Example 2.2. What is its complexity? What is the complexity of the function <code>matrix_vector</code> from Section 7?</p>
+</div>
+<div class="thm exercise style-definition" id="exercise-8-3"><p><span class="thm-head">Exercise 8.3.</span> What is the time complexity of your solution to Exercise 2.19 (fast computation of the Fibonacci numbers), in terms of the number of multiplications of <span class="math inline">\(2\times 2\)</span> matrices? Compare it with the straightforward computation from Exercise 2.4.</p>
+</div>
+</article>
+<nav class="pager" aria-label="More sections"><a class="prev" href="07.html"><span class="dir">Previous</span><span class="pt"><span class="pnum">7</span> Solving systems of linear algebraic equations. Introductory discussion</span></a><a class="next" href="09.html"><span class="dir">Next</span><span class="pt"><span class="pnum">9</span> More on the Gaussian elimination. <span class="math inline">\(\bs{LU}\)</span> factorization</span></a></nav>
+</main>
+</div>
+<a class="to-top" href="#" aria-label="Back to top">&uarr;</a>
+</body>
+</html>

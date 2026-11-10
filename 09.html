@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Section 9: More on the Gaussian elimination. LU factorization</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,500;1,400;1,500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="style.css">
+<script>
+window.MathJax = {
+  loader: {load: ['[tex]/tagformat']},
+  tex: {
+    packages: {'[+]': ['tagformat']},
+    tags: 'ams',
+    tagformat: {number: (n) => '9.' + n},
+    macros: {
+      D: '\\mathrm{d}',
+      Div: '\\operatorname{div}',
+      E: ['\\expectation\\left(#1\\right)', 1],
+      I: '\\mathrm{i}',
+      Im: '\\mathop{\\mathrm{Im}}\\nolimits',
+      Ind: ['\\,\\mathbf{1}_{#1}', 1],
+      Int: '\\operatorname{int}',
+      N: '\\mathbf{N}',
+      Poi: ['\\poisson\\left(#1\\right)', 1],
+      Pr: ['\\probability\\left\\{#1\\right\\}', 1],
+      R: '\\mathbf{R}',
+      Re: '\\mathop{\\mathrm{Re}}\\nolimits',
+      Tr: '\\operatorname{tr}',
+      V: ['{\\mathbf{#1}}', 1],
+      Var: ['\\,\\mathrm{Var}\\left(#1\\right)', 1],
+      arctanh: '\\operatorname{arctanh}',
+      bd: '\\operatorname{bd}',
+      bs: ['{\\boldsymbol{#1}}', 1],
+      code: ['\\texttt{#1}', 1],
+      curl: '\\operatorname{curl}',
+      diag: '\\operatorname{diag}',
+      diam: '\\operatorname{diam}',
+      erf: '\\operatorname{erf}',
+      expectation: '\\operatorname{E}',
+      grad: '\\operatorname{grad}',
+      labelitemi: '$\\bullet$',
+      overbar: ['\\mkern 3.5mu\\overline{\\mkern-2mu#1\\mkern-3mu}\\mkern 3.5mu', 1],
+      pdt: '\\partial_t',
+      poisson: '\\operatorname{Poisson}',
+      probability: '\\operatorname{P}',
+      rank: '\\operatorname{rank}',
+      sign: '\\operatorname{sgn}'
+    }
+  }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<script defer src="notes.js"></script>
+</head>
+<body>
+<div class="progress" aria-hidden="true"><span></span></div>
+<header class="topbar">
+  <a class="course-name" href="index.html">Math 488/688: Numerical Analysis</a>
+  <a class="all-sections" href="index.html">All sections</a>
+</header>
+<div class="layout">
+<aside class="sidetoc" aria-label="On this page">
+  <p class="sidetoc-title">Section 9</p>
+  <ol>
+<li><a href="#sec9-1"><span class="tnum">9.1</span><span class="ttl">Determinant of <span class="math inline">\(\bs A\)</span> and the inverse of <span class="math inline">\(\bs A\)</span></span></a></li>
+<li><a href="#sec9-2"><span class="tnum">9.2</span><span class="ttl">Gauss–Jordan elimination</span></a></li>
+<li><a href="#sec9:pivoting"><span class="tnum">9.3</span><span class="ttl">Pivoting</span></a></li>
+<li><a href="#sec9-4"><span class="tnum">9.4</span><span class="ttl"><span class="math inline">\(\bs{LU}\)</span> factorization</span></a></li>
+<li><a href="#sec9:numpy"><span class="tnum">9.5</span><span class="ttl">Introduction to NumPy</span></a></li>
+<li><a href="#sec9-6"><span class="tnum">9.6</span><span class="ttl">Gaussian elimination with NumPy</span></a></li>
+  </ol>
+</aside>
+<main>
+<header class="hero">
+  <span class="bignum" aria-hidden="true">9</span>
+  <div class="hero-text">
+    <p class="kicker">Section</p>
+    <h1>More on the Gaussian elimination. <span class="math inline">\(\bs{LU}\)</span> factorization</h1>
+    <p class="byline">Math 488/688: Numerical Analysis<br>e-mail: <a href="mailto:artem.novozhilov@ndsu.edu">artem.novozhilov@ndsu.edu</a>. Fall 2026</p>
+  </div>
+  <svg class="emblem" viewBox="0 0 160 160" aria-hidden="true">
+<line x1="8" y1="112" x2="156" y2="112"/>
+<polyline class="curve" points="20.0,156.0 21.2,156.0 22.4,156.0 23.6,155.9 24.8,155.9 26.0,155.8 27.2,155.7 28.4,155.6 29.6,155.4 30.8,155.3 32.0,155.1 33.2,154.9 34.4,154.7 35.6,154.5 36.8,154.3 38.0,154.0 39.2,153.7 40.4,153.5 41.6,153.1 42.8,152.8 44.0,152.5 45.2,152.1 46.4,151.7 47.6,151.3 48.8,150.9 50.0,150.5 51.2,150.1 52.4,149.6 53.6,149.1 54.8,148.6 56.0,148.1 57.2,147.5 58.4,147.0 59.6,146.4 60.8,145.8 62.0,145.2 63.2,144.6 64.4,144.0 65.6,143.3 66.8,142.6 68.0,141.9 69.2,141.2 70.4,140.5 71.6,139.7 72.8,139.0 74.0,138.2 75.2,137.4 76.4,136.6 77.6,135.7 78.8,134.9 80.0,134.0 81.2,133.1 82.4,132.2 83.6,131.3 84.8,130.3 86.0,129.4 87.2,128.4 88.4,127.4 89.6,126.4 90.8,125.4 92.0,124.3 93.2,123.3 94.4,122.2 95.6,121.1 96.8,120.0 98.0,118.8 99.2,117.7 100.4,116.5 101.6,115.3 102.8,114.1 104.0,112.9 105.2,111.6 106.4,110.4 107.6,109.1 108.8,107.8 110.0,106.5 111.2,105.2 112.4,103.8 113.6,102.5 114.8,101.1 116.0,99.7 117.2,98.3 118.4,96.8 119.6,95.4 120.8,93.9 122.0,92.4 123.2,90.9 124.4,89.4 125.6,87.9 126.8,86.3 128.0,84.7 129.2,83.1 130.4,81.5 131.6,79.9 132.8,78.2 134.0,76.6 135.2,74.9 136.4,73.2 137.6,71.5 138.8,69.8 140.0,68.0 141.2,66.2 142.4,64.4 143.6,62.6 144.8,60.8 146.0,59.0 147.2,57.1 148.4,55.2 149.6,53.4 150.8,51.4 152.0,49.5"/>
+<line class="dash" x1="140" y1="112" x2="140" y2="68"/>
+<line class="ray" x1="101.0" y1="125.2" x2="152.0" y2="50.4"/>
+<circle class="pt" cx="140" cy="68" r="3.5"/><circle class="pt" cx="110" cy="112" r="3"/>
+<text x="134" y="132">x₀</text><text x="92" y="132">x₁</text>
+</svg>
+</header>
+<nav class="toc" aria-label="Contents">
+  <p class="toc-title">In this section</p>
+  <ol>
+<li><a href="#sec9-1"><span class="tnum">9.1</span><span class="ttl">Determinant of <span class="math inline">\(\bs A\)</span> and the inverse of <span class="math inline">\(\bs A\)</span></span></a></li>
+<li><a href="#sec9-2"><span class="tnum">9.2</span><span class="ttl">Gauss–Jordan elimination</span></a></li>
+<li><a href="#sec9:pivoting"><span class="tnum">9.3</span><span class="ttl">Pivoting</span></a></li>
+<li><a href="#sec9-4"><span class="tnum">9.4</span><span class="ttl"><span class="math inline">\(\bs{LU}\)</span> factorization</span></a></li>
+<li><a href="#sec9:numpy"><span class="tnum">9.5</span><span class="ttl">Introduction to NumPy</span></a></li>
+<li><a href="#sec9-6"><span class="tnum">9.6</span><span class="ttl">Gaussian elimination with NumPy</span></a></li>
+  </ol>
+</nav>
+<article class="notes">
+<p>In the previous sections I discussed the basic idea of the classical Gaussian elimination and also why it should be always preferred over very slow Cramer’s method. Here I cover several further topics related to this method and look at it from a slightly more theoretical point of view.</p>
+<p>Recall that in the Gaussian elimination with back substitution we perform two steps: first, forward step, which turns <span class="math inline">\(\bs A\)</span> into an upper triangular matrix <span class="math inline">\(\bs U\)</span>: <span class="math display">\[
+[\bs A\mid \bs b]\longrightarrow [\bs U\mid \bs b'],
+\]</span> (here <span class="math inline">\(\bs b'\)</span> is the modified vector <span class="math inline">\(\bs b\)</span>, not the derivative), and the backward step, in which an upper triangular system is solved: <span class="math display">\[
+\bs{Ux}=\bs b'\implies \bs x =\bs U^{-1}\bs b',
+\]</span> here I write <span class="math inline">\(\bs U^{-1}\)</span> to mean that the system is solved in consecutive way, starting with <span class="math inline">\(x_n\)</span>, then <span class="math inline">\(x_{n-1}\)</span>, etc. I never need to explicitly calculate the inverse of <span class="math inline">\(\bs U\)</span>.</p>
+<h2 id="sec9-1"><span class="secnum">9.1</span><span class="sectitle">Determinant of <span class="math inline">\(\bs A\)</span> and the inverse of <span class="math inline">\(\bs A\)</span></span></h2>
+<p>In many problems I need to find <span class="math inline">\(\det \bs A\)</span> and the inverse <span class="math inline">\(\bs A^{-1}\)</span> (if it exists). Recall that for Cramer’s method finding the determinant is an intermediate step in the solution, which was also the main reason for such an unacceptable amount of computations. In reality, however, one finds the determinant through the process of Gaussian elimination. In particular, recall that the whole process of reducing <span class="math inline">\(\bs A\)</span> to <span class="math inline">\(\bs U\)</span> consists of applying the same elementary operation: namely, take a row, multiply it by a scalar, and add the result to another row. From a basic Linear Algebra course I know that this kind of elementary operation does not change the determinant of my matrix. That is, the determinants of <span class="math inline">\(\bs A\)</span> and <span class="math inline">\(\bs U\)</span> are the same. The determinant of <span class="math inline">\(\bs U\)</span>, however, is simply the product of the diagonal terms: <span class="math display">\[
+\det\bs A=\det\bs U=\prod_{i=1}^{n}u_{ii},
+\]</span> you can prove this formula by using the standard expansion of determinant with respect to the first column of <span class="math inline">\(\bs U\)</span>.</p>
+<p>Another common numerical linear algebra problem is to find the inverse of <span class="math inline">\(\bs A\)</span> (recall that the inverse is defined as the matrix <span class="math inline">\(\bs A^{-1}\)</span> such that <span class="math inline">\(\bs{AA}^{-1}=\bs I\)</span> and <span class="math inline">\(\bs A^{-1}\bs A=\bs I\)</span>, and it exists and is unique if and only if <span class="math inline">\(\det \bs A\neq 0\)</span>; for square matrices <span class="math inline">\(\bs{AB}=\bs I\)</span> already implies <span class="math inline">\(\bs{BA}=\bs I\)</span>). To see how <span class="math inline">\(\bs A^{-1}\)</span> can be found by the same algorithm, let me consider a sequence of problems with the same <span class="math inline">\(\bs A\)</span> but different <span class="math inline">\(\bs b\)</span>: <span class="math display">\[
+\bs b_1=\begin{bmatrix}
+          1 \\
+          0 \\
+          0 \\
+          \vdots \\
+          0 \\
+        \end{bmatrix},\quad \bs b_2=\begin{bmatrix}
+          0 \\
+          1 \\
+          0 \\
+          \vdots \\
+          0 \\
+        \end{bmatrix},\quad \ldots,\quad \bs b_n=\begin{bmatrix}
+        0 \\
+          0 \\
+          \vdots \\
+          0 \\
+          1 \\
+        \end{bmatrix},
+\]</span> i.e., <span class="math inline">\(\bs b_i\)</span> is the vector with 1 at the <span class="math inline">\(i\)</span>-th position and zeroes everywhere else, they are also called the standard unit vectors.</p>
+<p>Assume that I can solve <span class="math inline">\(n\)</span> systems <span class="math display">\[
+\bs{Ax}_i=\bs b_i,
+\]</span> and find <span class="math inline">\(n\)</span> solutions <span class="math inline">\(\bs x_i\)</span>. I claim that the matrix composed of these vectors as columns, i.e., <span class="math inline">\([\bs x_1\mid\ldots\mid\bs x_n]\)</span> is the inverse to <span class="math inline">\(\bs A\)</span>. Indeed, consider such matrix <span class="math inline">\(\bs B=[\bs x_1\mid\ldots\mid\bs x_n]\)</span> and calculate <span class="math display">\[
+\bs{AB}=\bs A[\bs x_1\mid\ldots\mid\bs x_n]=[\bs b_1\mid\ldots\mid\bs b_n]=\bs I,
+\]</span> because <span class="math inline">\(\bs b_i\)</span> are exactly the columns of the identity matrix. Therefore, <span class="math inline">\(\bs B=\bs A^{-1}\)</span> as required.</p>
+<p>From the algorithmic point of view it should be clear that <span class="math inline">\(n\)</span> systems should not be solved separately, which would require too many repeated calculations (think this out). It is much better to start with the unified forward step <span class="math display">\[
+[\bs A\mid \bs I]=[\bs A\mid\bs b_1\mid\ldots\mid \bs b_n]\longrightarrow [\bs U\mid \bs b_1'\mid\ldots\mid \bs b_n'],
+\]</span> and after it solve <span class="math inline">\(n\)</span> upper triangular systems to recover the columns of the inverse matrix. I invite the students to program this algorithm to make sure they understand how it works.</p>
+<h2 id="sec9-2"><span class="secnum">9.2</span><span class="sectitle">Gauss–Jordan elimination</span></h2>
+<p>In the previous subsection I discussed how to find the inverse matrix. It required solving <span class="math inline">\(n\)</span> upper triangular systems as the last step. Can I improve on it? Yes. Instead of Gaussian elimination with back substitution I can consider the so-called <em>Gauss–Jordan elimination</em>, in which matrix <span class="math inline">\(\bs A\)</span> is turned into the identity matrix now using two types of elementary row operations: in addition to the one used in the Gaussian elimination, I will also allow multiplication of my rows by scalars. Using my notation, the Gauss–Jordan elimination is defined schematically as follows: <span class="math display">\[
+[\bs A\mid\bs b]\longrightarrow [\bs I\mid \bs x].
+\]</span> Note that in this case my procedure ends up with the vector <span class="math inline">\(\bs x\)</span>, which must be my solution by construction.</p>
+<p>In slightly more words, to perform Gauss–Jordan elimination, I start with dividing the first row of <span class="math inline">\([\bs A\mid\bs b]\)</span> by <span class="math inline">\(a_{11}\)</span>, such that the leading coefficient of the first row becomes 1, and then use the first row to eliminate all the nonzero entries in the first column (with indexes <span class="math inline">\(2,\ldots,n\)</span>). After it is done, I divide the second row by the current <span class="math inline">\(a_{22}'\)</span> to have this entry to be equal to 1, and now eliminate all the nonzero entries in the second column in rows <span class="math inline">\(1,3,\ldots,n\)</span>, etc.</p>
+<div class="thm example style-definition" id="ex9:gj"><p><span class="thm-head">Example 9.1.</span> Let me use the same system as in Section 7 to illustrate the method. I start with <span class="math display">\[
+\begin{cases}
+2x + y - z = 1\\
+x - 3y + 2z = 1\\
+3x + 2y + z = 10
+\end{cases},
+\]</span> with the augmented matrix <span class="math display">\[
+\left[\begin{array}{rrr|r}
+2 &amp; 1 &amp; -1 &amp; 1\\
+1 &amp; -3 &amp; 2 &amp; 1\\
+3 &amp; 2 &amp; 1 &amp; 10
+\end{array}\right].
+\]</span></p>
+<p>Normalize the pivot (the diagonal element by which I divide; see Section <a href="#sec9:pivoting">9.3</a> for more on this term): <span class="math inline">\(R_1 \leftarrow \tfrac{1}{2}R_1\)</span>. <span class="math display">\[
+\left[\begin{array}{rrr|r}
+1 &amp; \tfrac{1}{2} &amp; -\tfrac{1}{2} &amp; \tfrac{1}{2}\\[2pt]
+1 &amp; -3 &amp; 2 &amp; 1\\
+3 &amp; 2 &amp; 1 &amp; 10
+\end{array}\right]
+\]</span> Eliminate below: <span class="math inline">\(R_2 \leftarrow R_2 - R_1\)</span>, <span class="math inline">\(R_3 \leftarrow R_3 - 3R_1\)</span>: <span class="math display">\[
+\left[\begin{array}{rrr|r}
+1 &amp; \tfrac{1}{2} &amp; -\tfrac{1}{2} &amp; \tfrac{1}{2}\\[2pt]
+0 &amp; -\tfrac{7}{2} &amp; \tfrac{5}{2} &amp; \tfrac{1}{2}\\[2pt]
+0 &amp; \tfrac{1}{2} &amp; \tfrac{5}{2} &amp; \tfrac{17}{2}
+\end{array}\right]
+\]</span></p>
+<p>Move to the column 2. Normalize the pivot: <span class="math inline">\(R_2 \leftarrow -\tfrac{2}{7}R_2\)</span>. <span class="math display">\[
+\left[\begin{array}{rrr|r}
+1 &amp; \tfrac{1}{2} &amp; -\tfrac{1}{2} &amp; \tfrac{1}{2}\\[2pt]
+0 &amp; 1 &amp; -\tfrac{5}{7} &amp; -\tfrac{1}{7}\\[2pt]
+0 &amp; \tfrac{1}{2} &amp; \tfrac{5}{2} &amp; \tfrac{17}{2}
+\end{array}\right]
+\]</span> Eliminate above and below: <span class="math inline">\(R_1 \leftarrow R_1 - \tfrac{1}{2}R_2\)</span>, <span class="math inline">\(R_3 \leftarrow R_3 - \tfrac{1}{2}R_2\)</span>. <span class="math display">\[
+\left[\begin{array}{rrr|r}
+1 &amp; 0 &amp; -\tfrac{1}{7} &amp; \tfrac{4}{7}\\[2pt]
+0 &amp; 1 &amp; -\tfrac{5}{7} &amp; -\tfrac{1}{7}\\[2pt]
+0 &amp; 0 &amp; \tfrac{20}{7} &amp; \tfrac{60}{7}
+\end{array}\right]
+\]</span></p>
+<p>Move to column 3. Normalize the pivot: <span class="math inline">\(R_3 \leftarrow \tfrac{7}{20}R_3\)</span>. <span class="math display">\[
+\left[\begin{array}{rrr|r}
+1 &amp; 0 &amp; -\tfrac{1}{7} &amp; \tfrac{4}{7}\\[2pt]
+0 &amp; 1 &amp; -\tfrac{5}{7} &amp; -\tfrac{1}{7}\\[2pt]
+0 &amp; 0 &amp; 1 &amp; 3
+\end{array}\right]
+\]</span> Eliminate above: <span class="math inline">\(R_1 \leftarrow R_1 + \tfrac{1}{7}R_3\)</span>, <span class="math inline">\(R_2 \leftarrow R_2 + \tfrac{5}{7}R_3\)</span>. <span class="math display">\[
+\left[\begin{array}{rrr|r}
+1 &amp; 0 &amp; 0 &amp; 1\\
+0 &amp; 1 &amp; 0 &amp; 2\\
+0 &amp; 0 &amp; 1 &amp; 3
+\end{array}\right]
+\]</span></p>
+<p>Hence the solution (as before) <span class="math display">\[
+x = 1, \qquad y = 2, \qquad z = 3.
+\]</span></p>
+</div>
+<p>It seems that for solving just one system of equations the Gauss–Jordan elimination requires somewhat more elementary operations compared to the Gaussian elimination, since here we need to apply the elementary operations to all the elements of <span class="math inline">\(\bs A\)</span>. This intuitive conclusion is true (approximately <span class="math inline">\(n^3\)</span> instead of <span class="math inline">\(2n^3/3\)</span> operations); I leave the exact count to you. So, is there any advantage? Yes, for finding the inverse matrix. In particular, the Gauss–Jordan elimination on <span class="math inline">\([\bs b_1\mid\ldots\mid\bs b_n]=\bs I\)</span> simultaneously schematically will look like <span class="math display">\[
+[\bs A\mid\bs I]\longrightarrow [\bs I\mid \bs A^{-1}],
+\]</span> i.e., the output of the algorithm is the inverse matrix (this method is usually discussed in introductory linear algebra classes), and there will be no disadvantage in elementary operations over the Gaussian elimination (again, the details are left to you), while the implementation may be simpler.</p>
+<h2 id="sec9:pivoting"><span class="secnum">9.3</span><span class="sectitle">Pivoting</span></h2>
+<p>Do the Gaussian and Gauss–Jordan eliminations always work? Obviously not, even for nice <span class="math inline">\(\bs A\)</span> with <span class="math inline">\(\det\bs A\neq0\)</span>. Imagine, for instance, any system of linear algebraic equations with matrix <span class="math inline">\(\bs A\)</span> such that <span class="math inline">\(a_{11}=0\)</span>. None of the discussed methods will work because they both require division by <span class="math inline">\(a_{11}\)</span> as one of the first steps. An obvious solution is to rearrange our equations in the way such that at the first step we would not need to divide by zero. There are multiple ways of doing this, the one which is recommended is called <em>pivoting</em> whereby we put in the position corresponding to <span class="math inline">\(a_{11}\)</span> either the maximum in absolute value element from the first column (partial pivoting) or the maximum in absolute value element from the whole matrix <span class="math inline">\(\bs A\)</span> (full pivoting). The actual reasons for implementing this procedure will be made clear later.</p>
+<p>In general, the pivoting strategy is clear: We want to put on the main diagonal the largest in absolute value element from all the elements that will not destroy the previous computations. For instance, for partial pivoting for both the Gaussian and Gauss–Jordan eliminations assume that we worked through the first <span class="math inline">\(i-1\)</span> columns; now it is time to work with row (and column) <span class="math inline">\(i\)</span>. I choose now the maximal in absolute value element out of those <em>on</em> or <em>below</em> the main diagonal only, say, it is row <span class="math inline">\(j\geq i\)</span>, and switch rows <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span> before moving forward. For the full pivoting I am choosing only from the elements of the submatrix with rows <span class="math inline">\(i,\ldots,n\)</span> and columns <span class="math inline">\(i,\ldots,n\)</span>, and now, if necessary, switch both rows and columns.</p>
+<p>In practice, full pivoting gives no large advantage over partial pivoting (although theoretically its error bounds are much better); it is, however, a little more computationally involved, since for the full pivoting one has to keep track of the labeling of the variables, since if one switches columns <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span> for the system of linear equations it means that variables <span class="math inline">\(x_i\)</span> and <span class="math inline">\(x_j\)</span> switched their places. Such switching must be undone when you return your final answer. This does not happen for the partial pivoting since switching two rows does not change anything in the order of variables.</p>
+<p>Finally, if one is performing the Gaussian or Gauss–Jordan elimination with partial or full pivoting for the calculation of determinant, remember that switching any two rows or columns in a matrix implies that the determinant of this matrix changes its sign. In general, one has to keep track of the total number of row and/or column switches during the computation if the function must return a correct determinant.</p>
+<p>In general, for a non singular matrix <span class="math inline">\(\bs A\)</span>, if pivoting is implemented, both the Gaussian and Gauss–Jordan eliminations always finish working in a finite number of steps and return an answer.</p>
+<h2 id="sec9-4"><span class="secnum">9.4</span><span class="sectitle"><span class="math inline">\(\bs{LU}\)</span> factorization</span></h2>
+<p>Here I will return back to the forward step of Gaussian elimination. Once again, all I am doing in this step is to use one row, multiply by a certain constant, and add to another row. From a more theoretical point of view this corresponds to the multiplication of <span class="math inline">\(\bs A\)</span> by a certain matrix <span class="math inline">\(\bs{E}_{ij}\)</span> from the left (E for “elementary”). Specifically, I consider an <span class="math inline">\(n\times n\)</span> matrix <span class="math display">\[
+\bs E_{ij}=\begin{bmatrix}
+             1 &amp;  &amp;  &amp;  \\
+              &amp; 1 &amp;  &amp;  \\
+              &amp; \alpha &amp; \ddots &amp;  \\
+              &amp;  &amp;  &amp; 1 \\
+           \end{bmatrix},
+\]</span> such that it is an almost identity matrix, with one additional element <span class="math inline">\(\alpha\)</span> in the position <span class="math inline">\(i,j\)</span>, where <span class="math inline">\(i&gt;j\)</span>. I claim that if I take any <span class="math inline">\(n\times n\)</span> matrix <span class="math inline">\(\bs A\)</span> and consider the product <span class="math inline">\(\bs E_{ij}\bs A\)</span> then it will be the same as to take the <span class="math inline">\(j\)</span>-th row of <span class="math inline">\(\bs A\)</span>, multiply it by <span class="math inline">\(\alpha\)</span> and add to row <span class="math inline">\(i\)</span>. I leave it as an exercise to check this claim. In other words the process <span class="math inline">\(\bs A\longrightarrow \bs U\)</span> can be written as <span class="math display">\[
+\bs U = \bs E^{k}\bs E^{k-1}\ldots\bs E^2 \bs E^1 \bs A,
+\]</span> where the indexes denote the order of applications of my elementary matrices and not powers. Note that here I assume that no division by zero happens during this process, so that the given statement is not absolutely general.</p>
+<p>I also claim that any <span class="math inline">\(\bs E_{ij}\)</span> is an invertible matrix. It is quite easy to realize that the inverse of <span class="math inline">\(\bs E_{ij}\)</span> is the matrix with <span class="math inline">\(-\alpha\)</span> at the <span class="math inline">\(i,j\)</span> position, ones on the main diagonal, and zeros everywhere else. Indeed, to bring everything back to the original state I now need to take row <span class="math inline">\(j\)</span> multiply it by <span class="math inline">\(-\alpha\)</span> and add to row <span class="math inline">\(i\)</span>. Hence, <span class="math display">\[
+(\bs{E}^1)^{-1}\ldots(\bs{E}^k)^{-1}\bs U=\bs A.
+\]</span> By construction all <span class="math inline">\((\bs E^j)^{-1}\)</span> are unit lower triangular matrices. That is, they are lower triangular with ones on the main diagonal. Their product will be again a unit lower triangular matrix <span class="math inline">\(\bs L\)</span> (this statement is left for the student to prove), and finally I can formulate an important conclusion: The forward step of the Gaussian elimination is equivalent to the factorization of matrix <span class="math inline">\(\bs A\)</span> into the product of a unit lower triangular matrix <span class="math inline">\(\bs L\)</span> and an upper triangular matrix <span class="math inline">\(\bs U\)</span>: <span class="math display">\[
+\bs A=\bs{LU}.
+\]</span> I can construct matrix <span class="math inline">\(\bs L\)</span> by keeping track of elementary operations performed on <span class="math inline">\(\bs A\)</span>, but since now I know that this factorization is possible, I would like to determine <span class="math inline">\(\bs L\)</span> directly. As the following example shows, this can be done step by step, at least in some cases.</p>
+<div class="thm example style-definition" id="example-9-2"><p><span class="thm-head">Example 9.2.</span> For my explicit example I choose a <span class="math inline">\(4\times 4\)</span> matrix. I must have <span class="math display">\[
+\begin{bmatrix}
+  1 &amp; 0 &amp; 0 &amp; 0 \\
+  l_{21} &amp; 1 &amp; 0 &amp; 0 \\
+  l_{31} &amp; l_{32} &amp; 1 &amp; 0 \\
+  l_{41} &amp; l_{42} &amp; l_{43} &amp; 1 \\
+\end{bmatrix}\cdot \begin{bmatrix}
+  u_{11} &amp; u_{12} &amp; u_{13} &amp; u_{14} \\
+  0 &amp; u_{22} &amp; u_{23} &amp; u_{24} \\
+  0 &amp; 0 &amp; u_{33} &amp; u_{34} \\
+  0 &amp; 0 &amp; 0 &amp; u_{44} \\
+\end{bmatrix}=\begin{bmatrix}
+  a_{11} &amp; a_{12} &amp; a_{13} &amp; a_{14} \\
+  a_{21} &amp; a_{22} &amp; a_{23} &amp; a_{24} \\
+  a_{31} &amp; a_{32} &amp; a_{33} &amp; a_{34} \\
+  a_{41} &amp; a_{42} &amp; a_{43} &amp; a_{44} \\
+\end{bmatrix}.
+\]</span> I will be working by the columns of matrix <span class="math inline">\(\bs A\)</span> from top to bottom (other approaches are also possible).</p>
+<p>For the first column I have <span class="math display">\begin{align*}
+  u_{11} &amp;= a_{11}, \\
+  l_{21}u_{11} &amp; =a_{21}\implies l_{21}=\frac{a_{21}}{u_{11}}\,, \\
+  l_{31}u_{11} &amp; =a_{31}\implies l_{31}=\frac{a_{31}}{u_{11}}\,, \\
+  l_{41}u_{11} &amp; =a_{41}\implies l_{41}=\frac{a_{41}}{u_{11}}\,,
+\end{align*}</span> note that I can determine all the unknowns uniquely here, using only the information from the previous steps and known matrix <span class="math inline">\(\bs A\)</span>.</p>
+<p>For the second column I have <span class="math display">\begin{align*}
+  u_{12} &amp;= a_{12}, \\
+  l_{21}u_{12}+u_{22} &amp; =a_{22}\implies u_{22}=a_{22}-l_{21}u_{12}\,, \\
+  l_{31}u_{12}+l_{32}u_{22} &amp;=a_{32}\implies l_{32}=\frac{1}{u_{22}}(a_{32}-l_{31}u_{12})\,, \\
+  l_{41}u_{12}+l_{42}u_{22} &amp; =a_{42}\implies l_{42}=\frac{1}{u_{22}}(a_{42}-l_{41}u_{12})\,.
+\end{align*}</span></p>
+<p>One more column: <span class="math display">\begin{align*}
+  u_{13} &amp;= a_{13}, \\
+  l_{21}u_{13}+u_{23} &amp; =a_{23}\implies u_{23}=a_{23}-l_{21}u_{13}\,, \\
+  l_{31}u_{13}+l_{32}u_{23}+u_{33} &amp;=a_{33}\implies u_{33}=a_{33}-l_{31}u_{13}-l_{32}u_{23}\,, \\
+  l_{41}u_{13}+l_{42}u_{23}+l_{43}u_{33} &amp; =a_{43}\implies l_{43}=\frac{1}{u_{33}}(a_{43}-l_{41}u_{13}-l_{42}u_{23})\,.
+\end{align*}</span> I will leave it to you to finish the calculation for the final fourth column, but my hope is that at this point already a pattern can be seen.</p>
+</div>
+<p>First, it is clearly possible (if all found <span class="math inline">\(u_{ii}\neq 0\)</span> at least) to determine the elements of <span class="math inline">\(\bs L\)</span> and <span class="math inline">\(\bs U\)</span> sequentially column by column. Second, it should be noted that for each column we have two different formulas: those that do not require any division and those that actually require division. In the general form, for <span class="math inline">\(n\times n\)</span> matrix, these can be written as follows.</p>
+<p>I denote <span class="math inline">\(j\)</span> the column index, so for all <span class="math inline">\(j=1,\ldots,n\)</span> I must have <span class="math display">\begin{align*}
+  u_{ij} &amp; =a_{ij}-\sum_{k=1}^{i-1}l_{ik}u_{kj},\quad i=1,\ldots,j, \\
+  l_{ij} &amp; =\frac{1}{u_{jj}}\left(a_{ij}-\sum_{k=1}^{j-1}l_{ik}u_{kj}\right)=\frac{v_{ij}}{u_{jj}}\,,\quad i=j+1,\ldots,n,
+\end{align*}</span> where I denoted <span class="math display">\[
+v_{ij}=a_{ij}-\sum_{k=1}^{j-1}l_{ik}u_{kj},\quad i=j,\ldots,n
+\]</span> (note that <span class="math inline">\(v_{jj}=u_{jj}\)</span>). Here in the last formulas I use the convention that if the upper summation index is less than the lower one, then the sum is zero. Note also that the elements <span class="math inline">\(l_{ij}\)</span>, <span class="math inline">\(i&gt;j\)</span>, are exactly the multipliers <span class="math inline">\(m_{ij}\)</span> of the Gaussian elimination from Section 7 (see also the next example).</p>
+<p>Another thing to note is that I actually do not have to store <span class="math inline">\(\bs A,\bs L,\bs U\)</span> separately. If one of the <span class="math inline">\(a_{ij}\)</span> is used, it is not required again for any computation, which allows me to store all the information in the same matrix (you will need to make a copy of <span class="math inline">\(\bs A\)</span> if you need to use it in the future). In my notation, the <span class="math inline">\(\bs{LU}\)</span> factorization algorithm that I presented above, can be represented schematically as <span class="math display">\[
+\begin{bmatrix}
+  a_{11} &amp; \ldots &amp;  &amp; a_{1n} \\
+  \vdots &amp; \ddots &amp;  &amp;  \\
+  \vdots &amp;  &amp;  &amp;  \\
+  a_{n1} &amp; \ldots &amp;  &amp; a_{nn} \\
+\end{bmatrix}\rightarrow\begin{bmatrix}
+  u_{11} &amp; a_{12}&amp; \ldots  &amp; a_{1n} \\
+  l_{21} &amp; a_{22}&amp;  &amp;  \\
+    \vdots     &amp;\vdots  &amp;  &amp;  \\
+  l_{n1} &amp; a_{n2}&amp; \ldots   &amp; a_{nn} \\
+\end{bmatrix}\rightarrow\ldots\rightarrow\begin{bmatrix}
+  u_{11} &amp; u_{12}&amp; \ldots  &amp; u_{1n} \\
+  l_{21} &amp; u_{22}&amp;  &amp;  \\
+    \vdots     &amp;\vdots  &amp;  &amp;  \\
+  l_{n1} &amp; l_{n2}&amp; \ldots   &amp; u_{nn} \\
+\end{bmatrix}.
+\]</span></p>
+<div class="thm example style-definition" id="example-9-3"><p><span class="thm-head">Example 9.3.</span> Let me return to the system from Example <a href="#ex9:gj">9.1</a>, <span class="math display">\[
+\begin{cases}
+2x + y - z = 1\\
+x - 3y + 2z = 1\\
+3x + 2y + z = 10
+\end{cases},
+\qquad
+\bs{A}=\begin{bmatrix}
+2 &amp; 1 &amp; -1\\
+1 &amp; -3 &amp; 2\\
+3 &amp; 2 &amp; 1
+\end{bmatrix},
+\qquad
+\bs{b}=\begin{bmatrix}1\\1\\10\end{bmatrix},
+\]</span> and find the factorization <span class="math inline">\(\bs{A}=\bs{L}\bs{U}\)</span> without pivoting, using the formulas derived above. I must have <span class="math display">\[
+\begin{bmatrix}
+1 &amp; 0 &amp; 0\\
+l_{21} &amp; 1 &amp; 0\\
+l_{31} &amp; l_{32} &amp; 1
+\end{bmatrix}
+\cdot
+\begin{bmatrix}
+u_{11} &amp; u_{12} &amp; u_{13}\\
+0 &amp; u_{22} &amp; u_{23}\\
+0 &amp; 0 &amp; u_{33}
+\end{bmatrix}
+=
+\begin{bmatrix}
+2 &amp; 1 &amp; -1\\
+1 &amp; -3 &amp; 2\\
+3 &amp; 2 &amp; 1
+\end{bmatrix}.
+\]</span></p>
+<p>For the first column I have <span class="math display">\[
+u_{11}=a_{11}=2,\qquad
+l_{21}=\frac{a_{21}}{u_{11}}=\frac{1}{2},\qquad
+l_{31}=\frac{a_{31}}{u_{11}}=\frac{3}{2}.
+\]</span></p>
+<p>For the second column, <span class="math display">\[
+\begin{aligned}
+u_{12}&amp;=a_{12}=1,\\
+u_{22}&amp;=a_{22}-l_{21}u_{12}=-3-\frac{1}{2}\cdot 1=-\frac{7}{2},\\
+l_{32}&amp;=\frac{1}{u_{22}}\bigl(a_{32}-l_{31}u_{12}\bigr)
+=-\frac{2}{7}\Bigl(2-\frac{3}{2}\cdot 1\Bigr)=-\frac{1}{7}.
+\end{aligned}
+\]</span></p>
+<p>For the third (and last) column there is nothing to divide: <span class="math display">\[
+\begin{aligned}
+u_{13}&amp;=a_{13}=-1,\\
+u_{23}&amp;=a_{23}-l_{21}u_{13}=2-\frac{1}{2}\cdot(-1)=\frac{5}{2},\\
+u_{33}&amp;=a_{33}-l_{31}u_{13}-l_{32}u_{23}
+=1-\frac{3}{2}\cdot(-1)-\Bigl(-\frac{1}{7}\Bigr)\cdot\frac{5}{2}
+=\frac{20}{7}.
+\end{aligned}
+\]</span></p>
+<p>If everything is stored in the same array, as described above, the computation looks as follows: <span class="math display">\[
+\begin{bmatrix}
+2 &amp; 1 &amp; -1\\
+1 &amp; -3 &amp; 2\\
+3 &amp; 2 &amp; 1
+\end{bmatrix}
+\longrightarrow
+\begin{bmatrix}
+2 &amp; 1 &amp; -1\\[2pt]
+\tfrac{1}{2} &amp; -3 &amp; 2\\[2pt]
+\tfrac{3}{2} &amp; 2 &amp; 1
+\end{bmatrix}
+\longrightarrow
+\begin{bmatrix}
+2 &amp; 1 &amp; -1\\[2pt]
+\tfrac{1}{2} &amp; -\tfrac{7}{2} &amp; 2\\[2pt]
+\tfrac{3}{2} &amp; -\tfrac{1}{7} &amp; 1
+\end{bmatrix}
+\longrightarrow
+\begin{bmatrix}
+2 &amp; 1 &amp; -1\\[2pt]
+\tfrac{1}{2} &amp; -\tfrac{7}{2} &amp; \tfrac{5}{2}\\[2pt]
+\tfrac{3}{2} &amp; -\tfrac{1}{7} &amp; \tfrac{20}{7}
+\end{bmatrix}.
+\]</span> Hence <span class="math display">\[
+\bs{L}=\begin{bmatrix}
+1 &amp; 0 &amp; 0\\[2pt]
+\tfrac{1}{2} &amp; 1 &amp; 0\\[2pt]
+\tfrac{3}{2} &amp; -\tfrac{1}{7} &amp; 1
+\end{bmatrix},
+\qquad
+\bs{U}=\begin{bmatrix}
+2 &amp; 1 &amp; -1\\[2pt]
+0 &amp; -\tfrac{7}{2} &amp; \tfrac{5}{2}\\[2pt]
+0 &amp; 0 &amp; \tfrac{20}{7}
+\end{bmatrix},
+\]</span> and the reader is invited to check by direct multiplication that indeed <span class="math inline">\(\bs{L}\bs{U}=\bs{A}\)</span>. Note that <span class="math inline">\(\bs{U}\)</span> is exactly the upper triangular matrix produced by the forward step of the Gaussian elimination, and the entries of <span class="math inline">\(\bs{L}\)</span> are exactly the multipliers used in that step.</p>
+<p>Now I solve <span class="math inline">\(\bs{L}\bs{y}=\bs{b}\)</span> by forward substitution: <span class="math display">\[
+\begin{aligned}
+y_1&amp;=1,\\
+y_2&amp;=1-\frac{1}{2}\,y_1=\frac{1}{2},\\
+y_3&amp;=10-\frac{3}{2}\,y_1+\frac{1}{7}\,y_2=\frac{60}{7},
+\end{aligned}
+\]</span> and then <span class="math inline">\(\bs{U}\bs{x}=\bs{y}\)</span> by back substitution: <span class="math display">\[
+\begin{aligned}
+z&amp;=\frac{60/7}{20/7}=3,\\
+y&amp;=-\frac{2}{7}\Bigl(\frac{1}{2}-\frac{5}{2}\cdot 3\Bigr)=2,\\
+x&amp;=\frac{1}{2}\bigl(1-1\cdot 2+1\cdot 3\bigr)=1.
+\end{aligned}
+\]</span> Therefore, as before, <span class="math display">\[
+x=1,\qquad y=2,\qquad z=3.
+\]</span></p>
+<p>As a by-product, since no rows were switched, <span class="math display">\[
+\det\bs{A}=\det\bs{L}\cdot\det\bs{U}=u_{11}u_{22}u_{33}
+=2\cdot\Bigl(-\frac{7}{2}\Bigr)\cdot\frac{20}{7}=-20.
+\]</span> Finally, if I now need to solve <span class="math inline">\(\bs{A}\bs{x}=\tilde{\bs{b}}\)</span> for a different right hand side <span class="math inline">\(\tilde{\bs{b}}\)</span>, I do not need to factor <span class="math inline">\(\bs{A}\)</span> again: only the two triangular solves with the same <span class="math inline">\(\bs{L}\)</span> and <span class="math inline">\(\bs{U}\)</span> are required.</p>
+</div>
+<p>How to do the pivoting for the <span class="math inline">\(\bs{LU}\)</span> factorization? Actually, partial pivoting is the standard choice (full pivoting would require an additional <span class="math inline">\(\mathcal O(n^3)\)</span> comparisons in general). Note in the formulas above I need to divide by <span class="math inline">\(u_{jj}\)</span>. Pivoting usually means that I divide by the largest in absolute value entry that will not destroy my previous computations. For <span class="math inline">\(\bs{LU}\)</span> factorization it works as follows: First I compute all <span class="math inline">\(v_{ij}\)</span>, <span class="math inline">\(i=j,\ldots,n\)</span> (see above the definition of <span class="math inline">\(v_{ij}\)</span>; recall that <span class="math inline">\(v_{jj}=u_{jj}\)</span>). Next I choose the largest in absolute value element out of them and put it on the main diagonal switching two rows. Note that when I write “switching two rows” I assume that all my previous calculations are stored in the same matrix as described above, such that the elements of <span class="math inline">\(\bs L\)</span>, which were already computed, and elements of <span class="math inline">\(\bs A\)</span>, which were not used yet, are also exchanging the rows.</p>
+<p>After the last step I finally divide all the entries below the main diagonal in the column <span class="math inline">\(j\)</span> by my “new” <span class="math inline">\(u_{jj}\)</span>. You should consider an explicit example to completely see how this procedure works.</p>
+<p>In short, I claim that if <span class="math inline">\(\bs A\)</span> is non-singular, then it is always possible to present it as <span class="math display">\[
+\bs P\bs A=\bs{LU},
+\]</span> where <span class="math inline">\(\bs P\)</span> is the permutation matrix, which keeps track of the rows I switched because of pivoting.</p>
+<p>To summarize the algorithm: I accept <span class="math inline">\(\bs A\)</span> and return <span class="math inline">\(\bs L, \bs U, \bs P\)</span>. Due to the above I must have <span class="math display">\[
+\bs{LUx}=\bs{PAx}=\bs{Pb}=\bs{b}'.
+\]</span> First I solve <span class="math display">\[
+\bs{Ly}=\bs b'
+\]</span> for <span class="math inline">\(\bs y\)</span>, note that it is lower triangular system, and hence can be solved very quickly.</p>
+<p>After I solve <span class="math display">\[
+\bs{Ux}=\bs y,
+\]</span> which is upper triangular, we already know how to solve it.</p>
+<p>This may look like an unnecessary complication, but careful counting shows that the number of elementary operations is approximately the same as for the Gaussian elimination. So what is an advantage of this method?</p>
+<p>Here the important fact is that if you found <span class="math inline">\(\bs{LU}\)</span> factorization once, you can solve systems with the same <span class="math inline">\(\bs A\)</span> but different <span class="math inline">\(\bs b\)</span> very fast, which is often important to do (note that for the Gaussian elimination you would need to repeat the whole process of turning <span class="math inline">\(\bs A\)</span> into <span class="math inline">\(\bs U\)</span> again for each new right hand side). Also, matrices <span class="math inline">\(\bs L\)</span> and <span class="math inline">\(\bs U\)</span> carry a lot of important information, which can be used.</p>
+<p>To finish this subsection, out of the three related methods I considered so far, <span class="math inline">\(\bs{LU}\)</span> factorization (with partial pivoting) is the one that is used in professional software to solve systems of linear algebraic equations, and which usually yields a reliable result for sufficiently “nice” (which we will discuss later) matrices. In particular, this is what the function <code>np.linalg.solve</code> from the next subsection does.</p>
+<h2 id="sec9:numpy"><span class="secnum">9.5</span><span class="sectitle">Introduction to NumPy</span></h2>
+<p>So far I represented vectors and matrices as Python lists (of lists). This was good for learning: every algorithm had to be written out in full, and you could see each elementary operation. For actual computations, however, lists are a poor choice, and in numerical analysis with Python one always uses the package NumPy (<em>Numerical Python</em>), which I already used a few times without explanation (e.g., <code>np.polyfit</code> in Section 4). There are two main reasons for this.</p>
+<p>The first reason is speed. Recall from Section 8 that a modern computer can perform about <span class="math inline">\(10^{12}\)</span> floating-point operations per second, whereas my function <code>gauss_method</code> in Section 7 solved a <span class="math inline">\(300\times 300\)</span> system, which requires about <span class="math inline">\(1.8\cdot 10^7\)</span> operations, in about <span class="math inline">\(0.3\)</span> seconds, i.e., at the speed of roughly <span class="math inline">\(6\cdot 10^7\)</span> operations per second, slower by a factor of more than ten thousand. The reason is that a Python list can contain objects of any kind, each element of a list is a separate object stored somewhere in memory, and each operation in a Python loop is interpreted separately: Python has to check what kind of objects it deals with, find them in memory, create a new object for the result, etc. A NumPy <em>array</em>, on the other hand, contains numbers of only one type (for us usually <code>float</code>), stored in memory one after another, and the operations on whole arrays are performed by precompiled and highly optimized code, written in the languages C and Fortran. Replacing explicit Python loops over the elements by operations on whole arrays is called <em>vectorization</em>.</p>
+<p>The second reason is that NumPy (together with the package SciPy built on top of it) contains a lot of reliable implementations of standard numerical algorithms, in particular, of numerical linear algebra, developed and tested over decades. Almost all the scientific software in Python, including the package Matplotlib, which I use for the figures in these notes, is built on NumPy arrays.</p>
+<p>Let me give a quick tour. As I mentioned in Section 2, NumPy is always imported as <code>np</code>.</p>
+<pre class="code session"><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">4.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+<span class="go">array([5., 7., 9.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mi">2</span> <span class="o">*</span> <span class="n">x</span>
+<span class="go">array([2., 4., 6.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">*</span> <span class="n">y</span>            <span class="c1"># elementwise product</span>
+<span class="go">array([ 4., 10., 18.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">@</span> <span class="n">y</span>            <span class="c1"># dot product</span>
+<span class="go">np.float64(32.0)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="go">array([1.        , 1.41421356, 1.73205081])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="mf">4.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">]</span>     <span class="c1"># compare with lists</span>
+<span class="go">[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]</span></code></pre>
+<p>Note that the arithmetic operations act on arrays elementwise, so that <code>x * y</code> is <em>not</em> the dot product; the dot product, and, more generally, the matrix product, is denoted by <code>@</code>. Note also how different this is from lists, for which <code>+</code> means concatenation (recall Section 2). Mathematical functions, such as <code>np.sqrt</code>, <code>np.exp</code>, <code>np.sin</code>, also act on arrays elementwise. A single number taken from an array is shown together with its type, as in <code>np.float64(32.0)</code>; it can be used as a usual <code>float</code> number.</p>
+<p>Matrices are two-dimensional arrays:</p>
+<pre class="code session"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(3, 3)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>          <span class="c1"># row 1, column 2; for lists it would be A[1][2]</span>
+<span class="go">np.float64(2.0)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>          <span class="c1"># the second row</span>
+<span class="go">array([ 1., -3.,  2.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>          <span class="c1"># the first column</span>
+<span class="go">array([2., 1., 3.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="mi">1</span><span class="p">:]</span>        <span class="c1"># the submatrix without the first row and column</span>
+<span class="go">array([[-3.,  2.],</span>
+<span class="go">       [ 2.,  1.]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">])</span>        <span class="c1"># matrix-vector product</span>
+<span class="go">array([ 1.,  1., 10.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<span class="go">array([1., 2., 3.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+<span class="go">np.float64(-20.000000000000007)</span></code></pre>
+<p>Note the indexing <code>A[i, j]</code> with one pair of brackets, and the slicing in each of the two dimensions: the colon alone means “all indexes”, and <code>1:</code> means “from index 1 to the end”, exactly as for lists. The function <code>np.linalg.solve</code> solves the system <span class="math inline">\(\bs{Ax}=\bs b\)</span> by the <span class="math inline">\(\bs{LU}\)</span> factorization with partial pivoting, and <code>np.linalg.det</code> computes the determinant using the same factorization, as described in the beginning of this section (hence the rounding error in the last digits).</p>
+<p>Some useful functions to create arrays:</p>
+<pre class="code session"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="go">array([0., 0., 0.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="go">array([[0., 0., 0.],</span>
+<span class="go">       [0., 0., 0.]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="go">array([[1., 0., 0.],</span>
+<span class="go">       [0., 1., 0.],</span>
+<span class="go">       [0., 0., 1.]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="go">array([0.  , 0.25, 0.5 , 0.75, 1.  ])</span></code></pre>
+<p>Here <code>np.zeros((2, 3))</code> creates a <span class="math inline">\(2\times 3\)</span> matrix of zeros (note the parentheses: the shape is given as one object), <code>np.eye(3)</code> is the <span class="math inline">\(3\times 3\)</span> identity matrix, and <code>np.linspace(0, 1, 5)</code> gives 5 equally spaced points from 0 to 1 (I used it in all my figures).</p>
+<p>Two warnings, both of which may lead to very confusing errors. First, all the elements of an array have the same type, which is chosen when the array is created, and if I create an array from integers, it will be an array of integers:</p>
+<pre class="code session"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span><span class="o">.</span><span class="n">dtype</span>
+<span class="go">dtype(&#39;int64&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span>
+<span class="go">array([[0, 1],</span>
+<span class="go">       [1, 3]])</span></code></pre>
+<p>The number <span class="math inline">\(0.5\)</span> was silently converted to the integer 0! This is why I always write <code>dtype=float</code> (or use numbers like <code>2.0</code>) when creating matrices for numerical computations. Second, a slice of an array is not a copy, but a <em>view</em> of the same data (compare with the discussion of lists in Section 2):</p>
+<pre class="code session"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">row</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">100.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="go">np.float64(100.0)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.0</span>     <span class="c1"># restore A</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">row</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">100.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="go">np.float64(2.0)</span></code></pre>
+<p>If a copy is needed, use the method <code>copy</code>.</p>
+<p>Finally, here is the promised comparison of speed. I compute the product of a <span class="math inline">\(2000\times 2000\)</span> matrix and a vector with the function <code>matrix_vector</code> from Section 7 and with NumPy:</p>
+<pre class="code script"><code><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">2026</span><span class="p">)</span>       <span class="c1"># a generator of random numbers</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="mi">2000</span>
+<span class="n">A</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>      <span class="c1"># an n by n matrix with random entries from [0, 1)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>           <span class="c1"># a vector with n random entries from [0, 1)</span>
+
+<span class="n">A_list</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>         <span class="c1"># the same matrix and vector as Python lists</span>
+<span class="n">x_list</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="n">y_list</span> <span class="o">=</span> <span class="n">matrix_vector</span><span class="p">(</span><span class="n">A_list</span><span class="p">,</span> <span class="n">x_list</span><span class="p">)</span>      <span class="c1"># the function from Section 7</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">A</span> <span class="o">@</span> <span class="n">x</span>
+<span class="n">t2</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;lists: </span><span class="si">{</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;NumPy: </span><span class="si">{</span><span class="n">t2</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t1</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;the difference of the results: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_list</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">y</span><span class="p">)</span><span class="si">:</span><span class="s2">.1e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></code></pre>
+<pre class="pyout"><code>lists: 0.1738 seconds
+NumPy: 0.0024 seconds
+the difference of the results: 2.7e-11</code></pre>
+<p>Here <code>rng</code> is a random number generator from NumPy (<code>rng.random</code> gives random numbers from <span class="math inline">\([0,1)\)</span>, and <code>rng.integers</code>, which I use below, gives random integers), the method <code>tolist</code> converts an array into a list (of lists), and <code>np.linalg.norm</code> computes the Euclidean norm of a vector. The results are the same up to rounding errors, but NumPy is almost a hundred times faster.</p>
+<h2 id="sec9-6"><span class="secnum">9.6</span><span class="sectitle">Gaussian elimination with NumPy</span></h2>
+<p>Let me now return to Gaussian elimination from Section 7 and rewrite it with NumPy arrays. First, I just copy the algorithm, changing only <code>A[j][k]</code> to <code>A[j, k]</code>, <code>len(A)</code> to <code>A.shape[0]</code>, and the creation of the arrays.</p>
+<pre class="code script"><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">gauss_numpy</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Solve the system Ax = b by Gaussian elimination with back substitution.</span>
+<span class="sd">    The same algorithm as gauss_method from Section 7, with NumPy arrays.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward_elimination</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Bring [A | b] to an upper triangular form; A and b are changed.&quot;&quot;&quot;</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ZeroDivisionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Zero on the main diagonal in row </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span>       <span class="c1"># the multiplier m_ji</span>
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+                    <span class="n">A</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">-=</span> <span class="n">m</span> <span class="o">*</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span>
+                <span class="n">A</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">b</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">-=</span> <span class="n">m</span> <span class="o">*</span> <span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">back_substitution</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Solve the upper triangular system Ax = b.&quot;&quot;&quot;</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+                <span class="n">total</span> <span class="o">+=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">total</span><span class="p">)</span> <span class="o">/</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+    <span class="n">A_copy</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">b_copy</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="n">forward_elimination</span><span class="p">(</span><span class="n">A_copy</span><span class="p">,</span> <span class="n">b_copy</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">back_substitution</span><span class="p">(</span><span class="n">A_copy</span><span class="p">,</span> <span class="n">b_copy</span><span class="p">)</span></code></pre>
+<p>Now I vectorize this code. Look again at the formulas from Section 7. At step <span class="math inline">\(i\)</span>, for all <span class="math inline">\(j,k=i+1,\ldots,n\)</span>, <span class="math display">\[
+m_{ji}=\frac{a_{ji}}{a_{ii}}\,,\quad a'_{jk}=a_{jk}-m_{ji}a_{ik},\quad b'_j=b_j-m_{ji}b_i.
+\]</span> The multipliers <span class="math inline">\(m_{ji}\)</span>, <span class="math inline">\(j=i+1,\ldots,n\)</span>, form a vector, which is obtained by dividing the part of the <span class="math inline">\(i\)</span>-th column of <span class="math inline">\(\bs A\)</span> below the main diagonal by <span class="math inline">\(a_{ii}\)</span>: in NumPy, <code>A[i + 1:, i] / A[i, i]</code>. The numbers <span class="math inline">\(m_{ji}a_{ik}\)</span>, <span class="math inline">\(j,k=i+1,\ldots,n\)</span>, form a matrix, which is the product of the column vector of the multipliers and the row vector <span class="math inline">\((a_{i,i+1},\ldots,a_{in})\)</span>; such a product <span class="math inline">\(\bs u\bs v^\top\)</span> of two vectors, with the elements <span class="math inline">\(u_jv_k\)</span>, is called the <em>outer product</em>, and in NumPy it is computed by <code>np.outer(u, v)</code>. Hence all the new elements <span class="math inline">\(a'_{jk}\)</span> are computed in one line, which literally says “subtract from the lower right submatrix the outer product of the multipliers and the <span class="math inline">\(i\)</span>-th row”. Similarly, all the new <span class="math inline">\(b'_j\)</span> are computed in one line. In the back substitution, the sum <span class="math inline">\(\sum_{j=i+1}^n a_{ij}x_j\)</span> is the dot product of a part of the <span class="math inline">\(i\)</span>-th row of <span class="math inline">\(\bs A\)</span> and a part of <span class="math inline">\(\bs x\)</span>. I get</p>
+<pre class="code script"><code><span class="k">def</span><span class="w"> </span><span class="nf">gauss_vectorized</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Solve the system Ax = b by Gaussian elimination with back substitution,</span>
+<span class="sd">    using vectorized NumPy operations.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward_elimination</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Bring [A | b] to an upper triangular form; A and b are changed.&quot;&quot;&quot;</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ZeroDivisionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Zero on the main diagonal in row </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span>                    <span class="c1"># all the multipliers m_ji, j &gt; i</span>
+            <span class="n">A</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:])</span>  <span class="c1"># all the new a_jk, j, k &gt; i</span>
+            <span class="n">A</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">b</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">-=</span> <span class="n">m</span> <span class="o">*</span> <span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>                         <span class="c1"># all the new b_j, j &gt; i</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">back_substitution</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Solve the upper triangular system Ax = b.&quot;&quot;&quot;</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">total</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">@</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span>    <span class="c1"># the sum of a_ij x_j over j &gt; i</span>
+            <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">total</span><span class="p">)</span> <span class="o">/</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+    <span class="n">A_copy</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">b_copy</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="n">forward_elimination</span><span class="p">(</span><span class="n">A_copy</span><span class="p">,</span> <span class="n">b_copy</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">back_substitution</span><span class="p">(</span><span class="n">A_copy</span><span class="p">,</span> <span class="n">b_copy</span><span class="p">)</span></code></pre>
+<p>The only loop that is left in <code>forward_elimination</code> is the loop over the steps <span class="math inline">\(i\)</span>, which cannot be avoided, since each step uses the results of the previous one; similarly for <code>back_substitution</code>.</p>
+<p>Now let me compare all the versions, together with <code>np.linalg.solve</code>, on the same random <span class="math inline">\(300\times 300\)</span> system (I continue with the same <code>rng</code> as above; the functions <code>gauss_method</code> and <code>matrix_vector</code> are from Section 7).</p>
+<pre class="code script"><code><span class="k">def</span><span class="w"> </span><span class="nf">random_system_numpy</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The same as random_system from Section 7, but with NumPy arrays.&quot;&quot;&quot;</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">501</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">x_hat</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="o">-</span><span class="mi">100000</span><span class="p">,</span> <span class="mi">100001</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">A</span> <span class="o">@</span> <span class="n">x_hat</span>
+    <span class="k">return</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x_hat</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="n">solve</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x_hat</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Solve Ax = b with the function solve, print the time and the error.&quot;&quot;&quot;</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">solve</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+    <span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+    <span class="n">error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">x_hat</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">18s</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">7.4f</span><span class="si">}</span><span class="s2"> seconds   error = </span><span class="si">{</span><span class="n">error</span><span class="si">:</span><span class="s2">.1e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x_hat</span> <span class="o">=</span> <span class="n">random_system_numpy</span><span class="p">(</span><span class="mi">300</span><span class="p">)</span>
+
+<span class="n">test</span><span class="p">(</span><span class="n">gauss_method</span><span class="p">,</span> <span class="n">A</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">b</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">x_hat</span><span class="p">,</span> <span class="s2">&quot;lists (Section 7)&quot;</span><span class="p">)</span>
+<span class="n">test</span><span class="p">(</span><span class="n">gauss_numpy</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x_hat</span><span class="p">,</span> <span class="s2">&quot;NumPy, loops&quot;</span><span class="p">)</span>
+<span class="n">test</span><span class="p">(</span><span class="n">gauss_vectorized</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x_hat</span><span class="p">,</span> <span class="s2">&quot;NumPy, vectorized&quot;</span><span class="p">)</span>
+<span class="n">test</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x_hat</span><span class="p">,</span> <span class="s2">&quot;np.linalg.solve&quot;</span><span class="p">)</span></code></pre>
+<pre class="pyout"><code>lists (Section 7)   0.3627 seconds   error = 1.3e-05
+NumPy, loops        2.2269 seconds   error = 1.3e-05
+NumPy, vectorized   0.0192 seconds   error = 2.0e-05
+np.linalg.solve     0.0015 seconds   error = 2.1e-08</code></pre>
+<p>Several things are worth noting here.</p>
+<ul>
+<li><p>The straightforward copy of the algorithm with NumPy arrays is <em>slower</em> than the version with lists! Each access to a single element of an array, such as <code>A[j, k]</code>, requires creating a new Python object for this number, which is even more expensive than for lists. NumPy is fast only if the loops over the elements are replaced by operations on whole arrays.</p></li>
+<li><p>The vectorized version is more than ten times faster than the version with lists, and about a hundred times faster than the copy with NumPy loops, although it performs exactly the same arithmetic operations (the slightly different error is due to a different order of additions in the dot product <code>@</code>).</p></li>
+<li><p>The function <code>np.linalg.solve</code> is faster still, by another order of magnitude: it is written in a compiled language and carefully optimized for the computer memory. Moreover, its error is several hundred times smaller. The main reason is the partial pivoting, which I did not implement; I will explain this effect later in the course.</p></li>
+</ul>
+<p>The moral is that in practice you should use professional implementations (such as <code>np.linalg.solve</code>); but to understand what they do, and to be able to write your own algorithms when there is no ready implementation, you should know how to vectorize your code.</p>
+<div class="thm exercise style-definition" id="exercise-9-1"><p><span class="thm-head">Exercise 9.1.</span> Write a partially vectorized version of <code>gauss_numpy</code>: keep the loop over the rows <code>j</code> in <code>forward_elimination</code>, and replace only the loop over <code>k</code> by an operation on a part of the row. Compare the speed of all three NumPy versions for <span class="math inline">\(n=300\)</span> and <span class="math inline">\(n=1000\)</span>.</p>
+</div>
+<div class="thm exercise style-definition" id="exercise-9-2"><p><span class="thm-head">Exercise 9.2.</span> Add partial pivoting (Section <a href="#sec9:pivoting">9.3</a>) to the function <code>gauss_vectorized</code>. (<em>Hint:</em> the function <code>np.argmax</code> returns the index of the largest element of an array, and the function <code>np.abs</code> computes the absolute values elementwise; two rows <code>i</code> and <code>p</code> of an array can be switched by <code>A[[i, p]] = A[[p, i]]</code>.) Compare the errors with those in the table above.</p>
+</div>
+<div class="thm exercise style-definition" id="exercise-9-3"><p><span class="thm-head">Exercise 9.3.</span> Write a function that computes the <span class="math inline">\(\bs{LU}\)</span> factorization of a matrix with NumPy, storing <span class="math inline">\(\bs L\)</span> and <span class="math inline">\(\bs U\)</span> in the same array as described in this section, and the functions that solve <span class="math inline">\(\bs{Ly}=\bs b\)</span> and <span class="math inline">\(\bs{Ux}=\bs y\)</span>. Check your functions with the example from this section.</p>
+</div>
+</article>
+<nav class="pager" aria-label="More sections"><a class="prev" href="08.html"><span class="dir">Previous</span><span class="pt"><span class="pnum">8</span> Computational complexity</span></a><a class="next" href="10.html"><span class="dir">Next</span><span class="pt"><span class="pnum">10</span> Floating-point arithmetic</span></a></nav>
+</main>
+</div>
+<a class="to-top" href="#" aria-label="Back to top">&uarr;</a>
+</body>
+</html>

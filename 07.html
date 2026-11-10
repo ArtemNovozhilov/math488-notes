@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Section 7: Solving systems of linear algebraic equations. Introductory discussion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,500;1,400;1,500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="style.css">
+<script>
+window.MathJax = {
+  loader: {load: ['[tex]/tagformat']},
+  tex: {
+    packages: {'[+]': ['tagformat']},
+    tags: 'ams',
+    tagformat: {number: (n) => '7.' + n},
+    macros: {
+      D: '\\mathrm{d}',
+      Div: '\\operatorname{div}',
+      E: ['\\expectation\\left(#1\\right)', 1],
+      I: '\\mathrm{i}',
+      Im: '\\mathop{\\mathrm{Im}}\\nolimits',
+      Ind: ['\\,\\mathbf{1}_{#1}', 1],
+      Int: '\\operatorname{int}',
+      N: '\\mathbf{N}',
+      Poi: ['\\poisson\\left(#1\\right)', 1],
+      Pr: ['\\probability\\left\\{#1\\right\\}', 1],
+      R: '\\mathbf{R}',
+      Re: '\\mathop{\\mathrm{Re}}\\nolimits',
+      Tr: '\\operatorname{tr}',
+      V: ['{\\mathbf{#1}}', 1],
+      Var: ['\\,\\mathrm{Var}\\left(#1\\right)', 1],
+      arctanh: '\\operatorname{arctanh}',
+      bd: '\\operatorname{bd}',
+      bs: ['{\\boldsymbol{#1}}', 1],
+      code: ['\\texttt{#1}', 1],
+      curl: '\\operatorname{curl}',
+      diag: '\\operatorname{diag}',
+      diam: '\\operatorname{diam}',
+      erf: '\\operatorname{erf}',
+      expectation: '\\operatorname{E}',
+      grad: '\\operatorname{grad}',
+      labelitemi: '$\\bullet$',
+      overbar: ['\\mkern 3.5mu\\overline{\\mkern-2mu#1\\mkern-3mu}\\mkern 3.5mu', 1],
+      pdt: '\\partial_t',
+      poisson: '\\operatorname{Poisson}',
+      probability: '\\operatorname{P}',
+      rank: '\\operatorname{rank}',
+      sign: '\\operatorname{sgn}'
+    }
+  }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<script defer src="notes.js"></script>
+</head>
+<body>
+<div class="progress" aria-hidden="true"><span></span></div>
+<header class="topbar">
+  <a class="course-name" href="index.html">Math 488/688: Numerical Analysis</a>
+  <a class="all-sections" href="index.html">All sections</a>
+</header>
+<div class="layout">
+<aside class="sidetoc" aria-label="On this page">
+  <p class="sidetoc-title">Section 7</p>
+  <ol>
+<li><a href="#sec7-1"><span class="tnum">7.1</span><span class="ttl">Cramer’s method</span></a></li>
+<li><a href="#sec7-2"><span class="tnum">7.2</span><span class="ttl">Gaussian elimination with back substitution</span></a></li>
+<li><a href="#sec7-3"><span class="tnum">7.3</span><span class="ttl">Python implementation</span></a></li>
+  </ol>
+</aside>
+<main>
+<header class="hero">
+  <span class="bignum" aria-hidden="true">7</span>
+  <div class="hero-text">
+    <p class="kicker">Section</p>
+    <h1>Solving systems of linear algebraic equations. Introductory discussion</h1>
+    <p class="byline">Math 488/688: Numerical Analysis<br>e-mail: <a href="mailto:artem.novozhilov@ndsu.edu">artem.novozhilov@ndsu.edu</a>. Fall 2026</p>
+  </div>
+  <svg class="emblem" viewBox="0 0 160 160" aria-hidden="true">
+<line x1="8" y1="112" x2="156" y2="112"/>
+<polyline class="curve" points="20.0,156.0 21.2,156.0 22.4,156.0 23.6,155.9 24.8,155.9 26.0,155.8 27.2,155.7 28.4,155.6 29.6,155.4 30.8,155.3 32.0,155.1 33.2,154.9 34.4,154.7 35.6,154.5 36.8,154.3 38.0,154.0 39.2,153.7 40.4,153.5 41.6,153.1 42.8,152.8 44.0,152.5 45.2,152.1 46.4,151.7 47.6,151.3 48.8,150.9 50.0,150.5 51.2,150.1 52.4,149.6 53.6,149.1 54.8,148.6 56.0,148.1 57.2,147.5 58.4,147.0 59.6,146.4 60.8,145.8 62.0,145.2 63.2,144.6 64.4,144.0 65.6,143.3 66.8,142.6 68.0,141.9 69.2,141.2 70.4,140.5 71.6,139.7 72.8,139.0 74.0,138.2 75.2,137.4 76.4,136.6 77.6,135.7 78.8,134.9 80.0,134.0 81.2,133.1 82.4,132.2 83.6,131.3 84.8,130.3 86.0,129.4 87.2,128.4 88.4,127.4 89.6,126.4 90.8,125.4 92.0,124.3 93.2,123.3 94.4,122.2 95.6,121.1 96.8,120.0 98.0,118.8 99.2,117.7 100.4,116.5 101.6,115.3 102.8,114.1 104.0,112.9 105.2,111.6 106.4,110.4 107.6,109.1 108.8,107.8 110.0,106.5 111.2,105.2 112.4,103.8 113.6,102.5 114.8,101.1 116.0,99.7 117.2,98.3 118.4,96.8 119.6,95.4 120.8,93.9 122.0,92.4 123.2,90.9 124.4,89.4 125.6,87.9 126.8,86.3 128.0,84.7 129.2,83.1 130.4,81.5 131.6,79.9 132.8,78.2 134.0,76.6 135.2,74.9 136.4,73.2 137.6,71.5 138.8,69.8 140.0,68.0 141.2,66.2 142.4,64.4 143.6,62.6 144.8,60.8 146.0,59.0 147.2,57.1 148.4,55.2 149.6,53.4 150.8,51.4 152.0,49.5"/>
+<line class="dash" x1="140" y1="112" x2="140" y2="68"/>
+<line class="ray" x1="101.0" y1="125.2" x2="152.0" y2="50.4"/>
+<circle class="pt" cx="140" cy="68" r="3.5"/><circle class="pt" cx="110" cy="112" r="3"/>
+<text x="134" y="132">x₀</text><text x="92" y="132">x₁</text>
+</svg>
+</header>
+<nav class="toc" aria-label="Contents">
+  <p class="toc-title">In this section</p>
+  <ol>
+<li><a href="#sec7-1"><span class="tnum">7.1</span><span class="ttl">Cramer’s method</span></a></li>
+<li><a href="#sec7-2"><span class="tnum">7.2</span><span class="ttl">Gaussian elimination with back substitution</span></a></li>
+<li><a href="#sec7-3"><span class="tnum">7.3</span><span class="ttl">Python implementation</span></a></li>
+  </ol>
+</nav>
+<article class="notes">
+<p>I now start the second part of the course, which will be devoted to different methods to solve numerically systems of linear algebraic equations. I will only look into the case when the systems I am dealing with have exactly <span class="math inline">\(n\)</span> equations and <span class="math inline">\(n\)</span> unknowns. In this case, these systems take the following general form <span class="math display">\begin{equation}\label{eq7:1}
+\begin{split}
+a_{11}x_1+a_{12}x_2+\ldots+a_{1n}x_n &amp;= b_1,\\
+a_{21}x_1+a_{22}x_2+\ldots+a_{2n}x_n &amp;=b_2,\\
+&amp;\vdots \\
+a_{n1}x_1+a_{n2}x_2+\ldots+a_{nn}x_n &amp;=b_n,
+\end{split}
+\end{equation}</span> which can be written much more succinctly in the vector form <span class="math display">\begin{equation}\label{eq7:2}
+    \bs{Ax}=\bs{b},
+\end{equation}</span> where I introduced matrix <span class="math inline">\(\bs A\)</span> <span class="math display">\begin{equation}\label{eq7:3}
+    \bs A=\begin{bmatrix}
+            a_{11} &amp; a_{12} &amp; \ldots &amp; a_{1n} \\
+            a_{21} &amp; a_{22} &amp; \ldots &amp; a_{2n} \\
+            \vdots &amp;  &amp;  &amp;  \\
+            a_{n1} &amp; a_{n2} &amp; \ldots &amp; a_{nn} \\
+          \end{bmatrix}
+\end{equation}</span> and column-vectors <span class="math inline">\(\bs x\)</span> and <span class="math inline">\(\bs b\)</span> <span class="math display">\begin{equation}\label{eq7:4}
+    \bs x=\begin{bmatrix}
+            x_1 \\
+            x_2 \\
+            \vdots \\
+            x_n \\
+          \end{bmatrix},\quad
+    \bs b=\begin{bmatrix}
+            b_1 \\
+            b_2 \\
+            \vdots \\
+            b_n \\
+          \end{bmatrix}.
+\end{equation}</span></p>
+<p>It should be clear that the data we get is <span class="math inline">\(\bs A, \bs b\)</span> and our task is to determine <span class="math inline">\(\bs{\hat x}\)</span> such that, if I plug this vector into the equation, the equation will turn into an identity.</p>
+<p>In the following I assume that the student knows how to add and multiply matrices, knows basic facts about determinants, inverse matrices, elementary row operations, row reduced echelon form, etc. If you feel that you need some light refresher on these topics, I would recommend reading through the first four sections of my Intermediate Linear Algebra lecture notes.</p>
+<p>A very basic fact from Linear Algebra states that</p>
+<div class="thm theorem style-plain" id="theorem-7-1"><p><span class="thm-head">Theorem 7.1.</span> System <span class="math inline">\(\eqref{eq7:1}\)</span> (or <span class="math inline">\(\eqref{eq7:2}\)</span>) has a unique solution if and only if <span class="math display">\[
+\det \bs A \neq 0.
+\]</span></p>
+</div>
+<p>There are a great number of different methods to solve <span class="math inline">\(\eqref{eq7:1}\)</span>, in this section I will talk about the two most basic ones: Cramer’s method and Gaussian elimination with back substitution. Before I discuss these methods I would like to remark that if a student encounters a system of linear algebraic equations in their regular activities (in other classes, in some simple computations) and if the number of unknowns does not exceed 3 (or 4), just use common sense and eliminate the variables one by one using the arithmetically simplest path. Do not try to reduce the matrix <span class="math inline">\([\bs A \mid \bs b ]\)</span> to the echelon form, this is just a waste of your time.</p>
+<h2 id="sec7-1"><span class="secnum">7.1</span><span class="sectitle">Cramer’s method</span></h2>
+<p>To formulate Cramer’s method let me recall first the formula to compute the determinant of a square matrix <span class="math inline">\(\bs A\)</span>. I will use the formula that uses the expansion with respect to the <span class="math inline">\(i\)</span>-th row. The formula reads <span class="math display">\begin{equation}\label{eq7:5}
+    \det \bs A=\sum_{j=1}^n (-1)^{i+j}a_{ij}\det \bs A_{ij},
+\end{equation}</span> where <span class="math inline">\(\bs A_{ij}\)</span> is the submatrix of matrix <span class="math inline">\(\bs A\)</span> obtained by removing the <span class="math inline">\(i\)</span>-th row and <span class="math inline">\(j\)</span>-th column from <span class="math inline">\(\bs A\)</span>. Clearly, the size of <span class="math inline">\(\bs A_{ij}\)</span> is <span class="math inline">\((n-1)\times(n-1)\)</span>. Note that formula <span class="math inline">\(\eqref{eq7:5}\)</span> is recursive, i.e., it computes the determinant of <span class="math inline">\(n\times n\)</span> matrix through determinants of several <span class="math inline">\((n-1)\times (n-1)\)</span> matrices. For this kind of definitions one must specify the boundary case. For us it may be <span class="math display">\[
+\det [a_{11}]=a_{11},
+\]</span> i.e., the determinant of <span class="math inline">\(1\times 1\)</span> matrix is equal to its only element. Or, for a <span class="math inline">\(2\times 2\)</span> matrix, <span class="math display">\[
+\det\begin{bmatrix}
+      a_{11} &amp; a_{12} \\
+      a_{21} &amp; a_{22} \\
+    \end{bmatrix}=a_{11}a_{22}-a_{12}a_{21}.
+\]</span></p>
+<p>Expression <span class="math inline">\(\eqref{eq7:5}\)</span> gives the same answer for any <span class="math inline">\(i=1,\ldots,n\)</span> (if done by hand, pick a row with the largest number of zeros). A similar formula is valid for the expansion of the determinant with respect to the <span class="math inline">\(j\)</span>-th column.</p>
+<p>Now I can state Cramer’s method: <span class="math display">\[
+x_j = \frac{\det\bs A_{j}}{\det \bs A}\,,\quad j=1,\ldots,n,
+\]</span> where <span class="math inline">\(\bs A_j\)</span> is an <span class="math inline">\(n\times n\)</span> matrix obtained from <span class="math inline">\(\bs A\)</span> by replacing the <span class="math inline">\(j\)</span>-th column of <span class="math inline">\(\bs A\)</span> with the vector <span class="math inline">\(\bs b\)</span>. (Do not confuse <span class="math inline">\(\bs A_j\)</span> with the submatrices <span class="math inline">\(\bs A_{ij}\)</span> above.) You can see that this method can serve as a proof of one half of the theorem stated above (if <span class="math inline">\(\det\bs A\neq 0\)</span> then the solution exists and is unique), if you know how to justify Cramer’s formulas for the solution of <span class="math inline">\(\eqref{eq7:1}\)</span>.</p>
+<div class="thm example style-definition" id="example-7-2"><p><span class="thm-head">Example 7.2.</span> Let’s solve the following system <span class="math display">\[
+\begin{cases}
+2x + y - z = 1\\
+x - 3y + 2z = 1\\
+3x + 2y + z = 10
+\end{cases}
+\]</span></p>
+<p>We compute the determinant of <span class="math inline">\(\bs A\)</span> <span class="math display">\[
+\det \bs A=\begin{vmatrix}2&amp;1&amp;-1\\1&amp;-3&amp;2\\3&amp;2&amp;1\end{vmatrix}
+=2\begin{vmatrix}-3&amp;2\\2&amp;1\end{vmatrix}
+-1\begin{vmatrix}1&amp;2\\3&amp;1\end{vmatrix}
++(-1)\begin{vmatrix}1&amp;-3\\3&amp;2\end{vmatrix}= -14+5-11 = -20 \neq 0
+\]</span></p>
+<p>I will find <span class="math display">\[
+\det \bs A_1=\begin{vmatrix}1&amp;1&amp;-1\\1&amp;-3&amp;2\\10&amp;2&amp;1\end{vmatrix}
+=1(-3-4)-1(1-20)+(-1)(2+30)=-7+19-32=-20,
+\]</span> and similarly <span class="math display">\[
+\det \bs A_2=-40,\quad \det\bs A_3=-60,
+\]</span> hence my solution is <span class="math display">\[
+(x,y,z)=(1,2,3).
+\]</span></p>
+</div>
+<h2 id="sec7-2"><span class="secnum">7.2</span><span class="sectitle">Gaussian elimination with back substitution</span></h2>
+<p>There are a few modifications of the algorithm, which is usually called <em>Gaussian elimination</em> in introductory Linear Algebra classes, so let me be very precise about what I call <em>Gaussian elimination with back substitution</em>. This particular method consists of two steps. In the first step I sequentially eliminate the variables <span class="math inline">\(x_1,x_2,\ldots\)</span> from the equations by using only one elementary row operation, namely, multiplication of a row of a matrix by a scalar and adding the result to another row. First I eliminate <span class="math inline">\(x_1\)</span> from the second equation by multiplying the first equation by <span class="math inline">\(-a_{21}/a_{11}\)</span> and adding it to the second equation; then I eliminate <span class="math inline">\(x_1\)</span> from the third equation by multiplying the first equation with <span class="math inline">\(-a_{31}/a_{11}\)</span> and adding to the third equation, etc. When I am done with all <span class="math inline">\(x_1\)</span> such that only the first equation contains this variable, I move to the second equation to eliminate <span class="math inline">\(x_2\)</span> from all the equations other than 1 and 2, etc. This process of course can be nicely represented with the help of the augmented matrix, and here are my first and final states of the first step (which I call the forward step): <span class="math display">\[
+\left[\begin{array}{cccc|c}
+            a_{11} &amp; a_{12} &amp; \ldots &amp; a_{1n} &amp; b_1\\
+            a_{21} &amp; a_{22} &amp; \ldots &amp; a_{2n} &amp; b_2\\
+            \vdots &amp;  &amp;  &amp;  &amp;\\
+            a_{n1} &amp; a_{n2} &amp; \ldots &amp; a_{nn} &amp; b_n\\
+          \end{array}\right]\longrightarrow          \left[\begin{array}{cccc|c}
+            a_{11} &amp; a_{12} &amp; \ldots &amp; a_{1n} &amp; b_1\\
+            0 &amp; a'_{22} &amp; \ldots &amp; a'_{2n} &amp; b'_2\\
+            \vdots &amp;  &amp;  &amp;  &amp;\\
+           0 &amp; 0 &amp; \ldots &amp; a'_{nn} &amp; b'_n\\
+          \end{array}\right],
+\]</span> where the primes indicate that these coefficients are in general different from the original values (note that I do not require the entries on the main diagonal to be equal to 1, as it is sometimes done in Linear Algebra classes).</p>
+<p>Thus the forward step brings matrix <span class="math inline">\(\bs A\)</span> to the upper triangular form, and in the second, or backward, step I need to solve the upper triangular system, which can certainly be done sequentially starting from the last equation. For instance, I have <span class="math display">\[
+x_n=\frac{b'_n}{a'_{nn}}\,,\quad x_{n-1}=\frac{b'_{n-1}}{a'_{n-1,n-1}}-\frac{a'_{n-1,n}}{a'_{n-1,n-1}}x_n\,,\quad\ldots
+\]</span></p>
+<div class="thm example style-definition" id="example-7-3"><p><span class="thm-head">Example 7.3.</span> Using the same system as in the previous example, here are all the steps: <span class="math display">\[
+\left[\begin{array}{ccc|c}
+2 &amp; 1 &amp; -1 &amp; 1\\
+1 &amp; -3 &amp; 2 &amp; 1\\
+3 &amp; 2 &amp; 1 &amp; 10
+\end{array}\right]
+\]</span></p>
+<p>First, I deal with column 1, with the multipliers <span class="math inline">\(m_{21}=a_{21}/a_{11}=\dfrac{1}{2}\)</span>, <span class="math inline">\(m_{31}=a_{31}/a_{11}=\dfrac{3}{2}\)</span>: <span class="math display">\[
+\begin{aligned}
+R_2 &amp;\to R_2 - \tfrac12 R_1
+  = \left(0,\; -\tfrac72,\; \tfrac52 \;\middle|\; \tfrac12\right)\\[2pt]
+R_3 &amp;\to R_3 - \tfrac32 R_1
+  = \left(0,\; \tfrac12,\; \tfrac52 \;\middle|\; \tfrac{17}{2}\right)
+\end{aligned}
+\]</span> <span class="math display">\[
+\left[\begin{array}{ccc|c}
+2 &amp; 1 &amp; -1 &amp; 1\\[2pt]
+0 &amp; -\frac72 &amp; \frac52 &amp; \frac12\\[2pt]
+0 &amp; \frac12 &amp; \frac52 &amp; \frac{17}{2}
+\end{array}\right]
+\]</span></p>
+<p>Now the second column, with the multiplier <span class="math inline">\(m_{32}=\dfrac{1/2}{-7/2}=-\dfrac17\)</span>: <span class="math display">\[
+R_3 \to R_3 + \tfrac17 R_2
+ = \left(0,\; 0,\; \tfrac{20}{7} \;\middle|\; \tfrac{60}{7}\right)
+\]</span> <span class="math display">\[
+\left[\begin{array}{ccc|c}
+2 &amp; 1 &amp; -1 &amp; 1\\[2pt]
+0 &amp; -\frac72 &amp; \frac52 &amp; \frac12\\[2pt]
+0 &amp; 0 &amp; \frac{20}{7} &amp; \frac{60}{7}
+\end{array}\right]
+\]</span></p>
+<p>The forward step is done. Now I do the back substitution: <span class="math display">\[
+\begin{aligned}
+\tfrac{20}{7}\,z &amp;= \tfrac{60}{7} &amp;&amp;\Longrightarrow\; z = 3\\[2pt]
+-\tfrac72 y + \tfrac52(3) &amp;= \tfrac12 &amp;&amp;\Longrightarrow\; -\tfrac72 y = -7 \;\Longrightarrow\; y = 2\\[2pt]
+2x + (2) - (3) &amp;= 1 &amp;&amp;\Longrightarrow\; x = 1
+\end{aligned}
+\]</span> Hence the final answer is (hopefully unsurprisingly) again <span class="math display">\[
+(x,y,z) = (1,2,3)
+\]</span></p>
+</div>
+<p>Looking at these two methods, one can see immediately that Cramer’s method has the advantage of checking in advance whether the given system has a unique solution: it requires calculating <span class="math inline">\(\det\bs A\)</span>. If this determinant is 0, then one should stop any calculations if the goal is to find the unique solution. Even worse, Gaussian elimination with back substitution uses divisions by <span class="math inline">\(a_{11},a'_{22},\ldots\)</span>. Each of these numbers can be zero, and hence it is totally possible not to be able to use this method even in the case when <span class="math inline">\(\det \bs A\neq 0\)</span> (think of <span class="math inline">\(a_{11}=0\)</span>). Is this reasoning enough to choose Cramer’s method over Gaussian elimination? Let me implement both in Python and see something, which may not be obvious at this point: namely, Cramer’s method has one significant disadvantage that outweighs everything else.</p>
+<h2 id="sec7-3"><span class="secnum">7.3</span><span class="sectitle">Python implementation</span></h2>
+<p>I will start with the listing for Cramer’s method. Note that I use recursion to compute the determinant, as suggested by formula <span class="math inline">\(\eqref{eq7:5}\)</span> with <span class="math inline">\(i=1\)</span> (in Python, <code>i = 0</code>); recall from Section 3 that a function is recursive if it calls itself. The boundary case of the recursion is the <span class="math inline">\(1\times 1\)</span> matrix. Since Python indexes start from 0, the indexes <span class="math inline">\(i,j\)</span> in the code are smaller by one than in the formulas, but the sign <span class="math inline">\((-1)^{i+j}\)</span> does not change. Other than that, the implementation follows the formulas and does not introduce any new programming concepts.</p>
+<pre class="code script"><code><span class="k">def</span><span class="w"> </span><span class="nf">submatrix</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the submatrix of the square matrix A obtained by removing</span>
+<span class="sd">    the i-th row and the j-th column.&quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[[</span><span class="n">A</span><span class="p">[</span><span class="n">p</span><span class="p">][</span><span class="n">q</span><span class="p">]</span> <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">if</span> <span class="n">q</span> <span class="o">!=</span> <span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">if</span> <span class="n">p</span> <span class="o">!=</span> <span class="n">i</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">det</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the determinant of the square matrix A, computed by the</span>
+<span class="sd">    expansion with respect to the first row (i = 0). The function is recursive.&quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>          <span class="c1"># the determinant of a 1 by 1 matrix</span>
+        <span class="k">return</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">total</span> <span class="o">+=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">j</span><span class="p">)</span> <span class="o">*</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">det</span><span class="p">(</span><span class="n">submatrix</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">))</span>     <span class="c1"># recursion!</span>
+
+    <span class="k">return</span> <span class="n">total</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">replace_column</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the matrix obtained from A by replacing its j-th column</span>
+<span class="sd">    with the vector b. The matrix A is not changed.&quot;&quot;&quot;</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="p">[</span><span class="n">row</span><span class="p">[:]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">A</span><span class="p">]</span>   <span class="c1"># a copy of A, see the explanation below</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">)):</span>
+        <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">B</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">cramer_method</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Solve the system Ax = b by Cramer&#39;s method: x_j = det(A_j) / det(A),</span>
+<span class="sd">    where A_j is obtained from A by replacing its j-th column with b.&quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="n">det_A</span> <span class="o">=</span> <span class="n">det</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">det_A</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The matrix is singular.&quot;</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">det</span><span class="p">(</span><span class="n">replace_column</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">j</span><span class="p">))</span> <span class="o">/</span> <span class="n">det_A</span>
+
+    <span class="k">return</span> <span class="n">x</span></code></pre>
+<p>Probably the only line that requires an additional explanation is the line</p>
+<pre class="code script"><code><span class="n">B</span> <span class="o">=</span> <span class="p">[</span><span class="n">row</span><span class="p">[:]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">A</span><span class="p">]</span>   <span class="c1"># a copy of A, see the explanation below</span></code></pre>
+<p>that is used to create a new copy of the given matrix <code>A</code>. Recall from Section 2 that the assignment <code>B = A</code> does not create a new list, only another name for the same list, and that a copy of a list can be created as, e.g., <code>A.copy()</code> or <code>A[:]</code>. For a matrix, i.e., a list of lists, this is not enough: <code>A[:]</code> is a new list, but its elements are the same rows as in <code>A</code> (exactly as with <code>[[0] * 3] * 2</code> in Section 2), and changing <code>B[i][j]</code> would change <code>A[i][j]</code> as well. So I need a deeper level of copying: I make a copy of each row separately. There are various ways of doing this; the one above works fine.</p>
+<p>Next I will write the code for Gaussian elimination. Here it is advisable first to carefully write down the general formulas for the computations of the new elements, which can be easily translated into code. Assume that I already worked through the first <span class="math inline">\(i-1\)</span> variables, and my matrix has the form <span class="math display">\[
+\left[\begin{array}{cccccc|c}
+            a_{11} &amp; a_{12} &amp;\ldots&amp; \ldots &amp; \ldots &amp; a_{1n} &amp; b_1\\
+            0 &amp; a_{22} &amp; \ldots&amp;\ldots &amp; \ldots &amp; a_{2n} &amp; b_2\\
+            0 &amp; 0 &amp; \ddots &amp; &amp; &amp;&amp; \vdots\\
+           \vdots &amp; &amp;&amp; a_{ii} &amp; \ldots &amp; a_{in} &amp; b_i \\
+            \vdots &amp; &amp; &amp; a_{i+1,i} &amp; \ldots &amp; a_{i+1,n} &amp; b_{i+1}\\
+            &amp; &amp;&amp; \vdots &amp; &amp;\vdots &amp; \vdots\\
+            0 &amp;&amp; \ldots &amp; a_{ni} &amp; \ldots &amp; a_{nn} &amp; b_n\\
+          \end{array}\right]
+\]</span> (here, to simplify the notation, <span class="math inline">\(a_{jk}\)</span> and <span class="math inline">\(b_j\)</span> denote the current values, without primes). To eliminate <span class="math inline">\(x_i\)</span> from the equations <span class="math inline">\(j=i+1,\ldots,n\)</span>, I compute the multipliers <span class="math display">\[
+m_{ji}=\frac{a_{ji}}{a_{ii}}\,,\quad j=i+1,\ldots,n,
+\]</span> and then the new values <span class="math display">\begin{align*}
+a'_{jk} &amp;= a_{jk} - m_{ji}a_{ik},\quad k=i+1,\ldots,n,\\
+b'_j &amp; = b_j -m_{ji}b_i,
+\end{align*}</span> whereas <span class="math inline">\(a'_{ji}=0\)</span>. After this calculation is done, I change <span class="math inline">\(i\)</span> to <span class="math inline">\(i+1\)</span>, until I reach the last row.</p>
+<p>For the back substitution (assuming that the system already has the upper triangular form), I have <span class="math display">\[
+x_i =\frac{1}{a'_{ii}}\left(b_i'-\sum_{j=i+1}^{n} a_{ij}' x_j\right),\quad i=n, n-1, n-2,\ldots, 1,
+\]</span> where for <span class="math inline">\(i=n\)</span> the sum is empty, i.e., equal to zero. In Python, with the indexes from <span class="math inline">\(0\)</span> to <span class="math inline">\(n-1\)</span>, the sum becomes <code>for j in range(i + 1, n)</code>, and <code>i</code> runs over <code>n - 1, n - 2, ..., 0</code>, which is <code>range(n - 1, -1, -1)</code> (recall that the stop value is not included).</p>
+<pre class="code script"><code><span class="k">def</span><span class="w"> </span><span class="nf">gauss_method</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Solve the system Ax = b by Gaussian elimination with back substitution.</span>
+
+<span class="sd">    In the first, forward, step the augmented matrix [A | b] is brought to</span>
+<span class="sd">    an upper triangular form by elementary row operations. In the second,</span>
+<span class="sd">    backward, step this upper triangular system is solved starting with</span>
+<span class="sd">    the last equation. The matrix A and the vector b are not changed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward_elimination</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Bring [A | b] to an upper triangular form; A and b are changed.&quot;&quot;&quot;</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>              <span class="c1"># the i-th variable is eliminated</span>
+            <span class="k">if</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ZeroDivisionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Zero on the main diagonal in row </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>       <span class="c1"># from the rows below the i-th row</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>       <span class="c1"># the multiplier m_ji</span>
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+                    <span class="n">A</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">-=</span> <span class="n">m</span> <span class="o">*</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">k</span><span class="p">]</span>
+                <span class="n">A</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>                 <span class="c1"># optional, a_ji becomes zero anyway</span>
+                <span class="n">b</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">-=</span> <span class="n">m</span> <span class="o">*</span> <span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">back_substitution</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Solve the upper triangular system Ax = b.&quot;&quot;&quot;</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>      <span class="c1"># i = n-1, n-2, ..., 0</span>
+            <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+                <span class="n">total</span> <span class="o">+=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">total</span><span class="p">)</span> <span class="o">/</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+    <span class="c1"># the main body of gauss_method</span>
+    <span class="n">A_copy</span> <span class="o">=</span> <span class="p">[</span><span class="n">row</span><span class="p">[:]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">A</span><span class="p">]</span>
+    <span class="n">b_copy</span> <span class="o">=</span> <span class="n">b</span><span class="p">[:]</span>
+
+    <span class="n">forward_elimination</span><span class="p">(</span><span class="n">A_copy</span><span class="p">,</span> <span class="n">b_copy</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">back_substitution</span><span class="p">(</span><span class="n">A_copy</span><span class="p">,</span> <span class="n">b_copy</span><span class="p">)</span></code></pre>
+<p>Note that in the last listing I define two auxiliary functions inside the function <code>gauss_method</code>: <code>forward_elimination</code> and <code>back_substitution</code>. Such functions cannot be called outside of the function where they are defined. Check that each line of these two functions corresponds to one of the formulas above: the multiplier <code>m</code> is <span class="math inline">\(m_{ji}\)</span>, the loop over <code>k</code> computes <span class="math inline">\(a'_{jk}\)</span>, the next lines give <span class="math inline">\(a'_{ji}=0\)</span> and <span class="math inline">\(b'_j\)</span>, and in <code>back_substitution</code> the variable <code>total</code> is the sum <span class="math inline">\(\sum_{j=i+1}^n a'_{ij}x_j\)</span>. As in the function <code>newton</code> from Section 6, I raise <code>ZeroDivisionError</code> if I am about to divide by zero. Since <code>forward_elimination</code> changes the matrix and the vector it works with, I call it with copies of <code>A</code> and <code>b</code>.</p>
+<p>Now everything is ready for the test. To make a somewhat more automatized test, I first create a random matrix <span class="math inline">\(\bs A\)</span> and a solution <span class="math inline">\(\bs{\hat x}\)</span>; after it I compute <span class="math inline">\(\bs{b}=\bs{A\hat x}\)</span> and call my functions with the data <span class="math inline">\(\bs A\)</span> and <span class="math inline">\(\bs b\)</span>. To see how far my found solution is from the original one, I compute the Euclidean norm <span class="math display">\[
+\|\bs x-\bs y\|=\sqrt{(x_1-y_1)^2+\ldots+(x_n-y_n)^2}
+\]</span> for two vectors <span class="math inline">\(\bs x, \bs y\)</span>, which measures the distance between them. (The function <code>matrix_vector</code> is a solution to Exercise 2.5 for square matrices.)</p>
+<pre class="code script"><code><span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">matrix_vector</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the product Ax of the square matrix A and the vector x.&quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">y</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">distance</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the Euclidean distance between the vectors x and y.&quot;&quot;&quot;</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)):</span>
+        <span class="n">total</span> <span class="o">+=</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span>
+    <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">total</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">random_system</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a random n by n matrix A with integer entries between -500 and 500</span>
+<span class="sd">    (stored as float numbers), a random vector x_hat with integer entries between</span>
+<span class="sd">    -100000 and 100000, and the vector b = A x_hat.&quot;&quot;&quot;</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="p">[[</span><span class="nb">float</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">500</span><span class="p">))</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)]</span>
+    <span class="n">x_hat</span> <span class="o">=</span> <span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="o">-</span><span class="mi">100000</span><span class="p">,</span> <span class="mi">100000</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)]</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">matrix_vector</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">x_hat</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x_hat</span></code></pre>
+<p>Note that the function <code>random_system</code> returns three objects; Python collects them into one object (a <em>tuple</em>, which is similar to a list), and the multiple assignment <code>A, b, x_hat = random_system(8)</code> unpacks it, exactly as in <code>a, b = b, a</code> from Section 1. As in Section 2, I use <code>random.seed</code> to make the results reproducible.</p>
+<pre class="code script"><code><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">2026</span><span class="p">)</span>
+
+<span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x_hat</span> <span class="o">=</span> <span class="n">random_system</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+
+<span class="n">x_cramer</span> <span class="o">=</span> <span class="n">cramer_method</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<span class="n">x_gauss</span> <span class="o">=</span> <span class="n">gauss_method</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cramer&#39;s method:      error = </span><span class="si">{</span><span class="n">distance</span><span class="p">(</span><span class="n">x_hat</span><span class="p">,</span><span class="w"> </span><span class="n">x_cramer</span><span class="p">)</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Gaussian elimination: error = </span><span class="si">{</span><span class="n">distance</span><span class="p">(</span><span class="n">x_hat</span><span class="p">,</span><span class="w"> </span><span class="n">x_gauss</span><span class="p">)</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></code></pre>
+<pre class="pyout"><code>Cramer's method:      error = 1.36e-10
+Gaussian elimination: error = 2.02e-09</code></pre>
+<p>Both errors are small compared with the solution itself: here <span class="math inline">\(\|\bs{\hat x}\|\approx 2\cdot 10^5\)</span>, so the relative errors are about <span class="math inline">\(10^{-15}\)</span> for Cramer’s method and <span class="math inline">\(10^{-14}\)</span> for Gaussian elimination. Hence there is some loss of accuracy (recall that <code>float</code> numbers carry about 16 significant digits), and I will come back to this point later, but the overall performance of the two methods is comparable.</p>
+<p>And here is finally an example that explains why no one will ever use Cramer’s method to solve linear systems. I continue with the same code and measure the time with <code>time.perf_counter</code> (recall Section 2):</p>
+<pre class="code script"><code><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x_hat</span> <span class="o">=</span> <span class="n">random_system</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span>          <span class="c1"># a 9 by 9 system</span>
+
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="n">x_cramer</span> <span class="o">=</span> <span class="n">cramer_method</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cramer&#39;s method, n = 9: </span><span class="si">{</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span></code></pre>
+<pre class="pyout"><code>Cramer's method, n = 9: 2.81 seconds</code></pre>
+<p>On my computer, solving a <span class="math inline">\(9\times 9\)</span> system takes a few seconds! If you decide to see what happens on your computer, do not try to increase the matrix size beyond 10: each additional equation makes the computation approximately <span class="math inline">\(n\)</span> times longer.</p>
+<p>Gaussian elimination, however, can easily deal with <span class="math inline">\(300\times 300\)</span> systems:</p>
+<pre class="code script"><code><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x_hat</span> <span class="o">=</span> <span class="n">random_system</span><span class="p">(</span><span class="mi">300</span><span class="p">)</span>        <span class="c1"># a 300 by 300 system</span>
+
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="n">x_gauss</span> <span class="o">=</span> <span class="n">gauss_method</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Gaussian elimination, n = 300: </span><span class="si">{</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span></code></pre>
+<pre class="pyout"><code>Gaussian elimination, n = 300: 0.30 seconds</code></pre>
+<p>In the next section I will get to the bottom of this.</p>
+</article>
+<nav class="pager" aria-label="More sections"><a class="prev" href="06.html"><span class="dir">Previous</span><span class="pt"><span class="pnum">6</span> Newton–Raphson method again. Now from a more theoretical point of view</span></a><a class="next" href="08.html"><span class="dir">Next</span><span class="pt"><span class="pnum">8</span> Computational complexity</span></a></nav>
+</main>
+</div>
+<a class="to-top" href="#" aria-label="Back to top">&uarr;</a>
+</body>
+</html>
