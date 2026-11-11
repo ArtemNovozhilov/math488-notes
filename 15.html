@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Section 15: Gaussian quadratures</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,500;1,400;1,500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="style.css">
+<script>
+window.MathJax = {
+  loader: {load: ['[tex]/tagformat']},
+  tex: {
+    packages: {'[+]': ['tagformat']},
+    tags: 'ams',
+    tagformat: {number: (n) => '15.' + n},
+    macros: {
+      D: '\\mathrm{d}',
+      Div: '\\operatorname{div}',
+      E: ['\\expectation\\left(#1\\right)', 1],
+      I: '\\mathrm{i}',
+      Im: '\\mathop{\\mathrm{Im}}\\nolimits',
+      Ind: ['\\,\\mathbf{1}_{#1}', 1],
+      Int: '\\operatorname{int}',
+      N: '\\mathbf{N}',
+      Poi: ['\\poisson\\left(#1\\right)', 1],
+      Pr: ['\\probability\\left\\{#1\\right\\}', 1],
+      R: '\\mathbf{R}',
+      Re: '\\mathop{\\mathrm{Re}}\\nolimits',
+      Tr: '\\operatorname{tr}',
+      V: ['{\\mathbf{#1}}', 1],
+      Var: ['\\,\\mathrm{Var}\\left(#1\\right)', 1],
+      arctanh: '\\operatorname{arctanh}',
+      bd: '\\operatorname{bd}',
+      bs: ['{\\boldsymbol{#1}}', 1],
+      code: ['\\texttt{#1}', 1],
+      curl: '\\operatorname{curl}',
+      diag: '\\operatorname{diag}',
+      diam: '\\operatorname{diam}',
+      erf: '\\operatorname{erf}',
+      expectation: '\\operatorname{E}',
+      grad: '\\operatorname{grad}',
+      labelitemi: '$\\bullet$',
+      overbar: ['\\mkern 3.5mu\\overline{\\mkern-2mu#1\\mkern-3mu}\\mkern 3.5mu', 1],
+      pdt: '\\partial_t',
+      poisson: '\\operatorname{Poisson}',
+      probability: '\\operatorname{P}',
+      rank: '\\operatorname{rank}',
+      sign: '\\operatorname{sgn}'
+    }
+  }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<script defer src="notes.js"></script>
+</head>
+<body>
+<div class="progress" aria-hidden="true"><span></span></div>
+<header class="topbar">
+  <a class="course-name" href="index.html">Math 488/688: Numerical Analysis</a>
+  <a class="all-sections" href="index.html">All sections</a>
+</header>
+<div class="layout">
+<aside class="sidetoc" aria-label="On this page">
+  <p class="sidetoc-title">Section 15</p>
+  <ol>
+<li><a href="#sec15-1"><span class="tnum">15.1</span><span class="ttl">Free nodes</span></a></li>
+<li><a href="#sec15-2"><span class="tnum">15.2</span><span class="ttl">Gaussian quadratures with two and three points</span></a></li>
+<li><a href="#sec15-3"><span class="tnum">15.3</span><span class="ttl">The general construction</span></a></li>
+<li><a href="#sec15-4"><span class="tnum">15.4</span><span class="ttl">An arbitrary interval and the error</span></a></li>
+<li><a href="#sec15-5"><span class="tnum">15.5</span><span class="ttl">Python code</span></a></li>
+<li><a href="#sec15-6"><span class="tnum">15.6</span><span class="ttl">Exercises</span></a></li>
+  </ol>
+</aside>
+<main>
+<header class="hero">
+  <span class="bignum" aria-hidden="true">15</span>
+  <div class="hero-text">
+    <p class="kicker">Section</p>
+    <h1>Gaussian quadratures</h1>
+    <p class="byline">Math 488/688: Numerical Analysis<br>e-mail: <a href="mailto:artem.novozhilov@ndsu.edu">artem.novozhilov@ndsu.edu</a>. Fall 2026</p>
+  </div>
+  <svg class="emblem" viewBox="0 0 160 160" aria-hidden="true">
+<line x1="8" y1="112" x2="156" y2="112"/>
+<polyline class="curve" points="20.0,156.0 21.2,156.0 22.4,156.0 23.6,155.9 24.8,155.9 26.0,155.8 27.2,155.7 28.4,155.6 29.6,155.4 30.8,155.3 32.0,155.1 33.2,154.9 34.4,154.7 35.6,154.5 36.8,154.3 38.0,154.0 39.2,153.7 40.4,153.5 41.6,153.1 42.8,152.8 44.0,152.5 45.2,152.1 46.4,151.7 47.6,151.3 48.8,150.9 50.0,150.5 51.2,150.1 52.4,149.6 53.6,149.1 54.8,148.6 56.0,148.1 57.2,147.5 58.4,147.0 59.6,146.4 60.8,145.8 62.0,145.2 63.2,144.6 64.4,144.0 65.6,143.3 66.8,142.6 68.0,141.9 69.2,141.2 70.4,140.5 71.6,139.7 72.8,139.0 74.0,138.2 75.2,137.4 76.4,136.6 77.6,135.7 78.8,134.9 80.0,134.0 81.2,133.1 82.4,132.2 83.6,131.3 84.8,130.3 86.0,129.4 87.2,128.4 88.4,127.4 89.6,126.4 90.8,125.4 92.0,124.3 93.2,123.3 94.4,122.2 95.6,121.1 96.8,120.0 98.0,118.8 99.2,117.7 100.4,116.5 101.6,115.3 102.8,114.1 104.0,112.9 105.2,111.6 106.4,110.4 107.6,109.1 108.8,107.8 110.0,106.5 111.2,105.2 112.4,103.8 113.6,102.5 114.8,101.1 116.0,99.7 117.2,98.3 118.4,96.8 119.6,95.4 120.8,93.9 122.0,92.4 123.2,90.9 124.4,89.4 125.6,87.9 126.8,86.3 128.0,84.7 129.2,83.1 130.4,81.5 131.6,79.9 132.8,78.2 134.0,76.6 135.2,74.9 136.4,73.2 137.6,71.5 138.8,69.8 140.0,68.0 141.2,66.2 142.4,64.4 143.6,62.6 144.8,60.8 146.0,59.0 147.2,57.1 148.4,55.2 149.6,53.4 150.8,51.4 152.0,49.5"/>
+<line class="dash" x1="140" y1="112" x2="140" y2="68"/>
+<line class="ray" x1="101.0" y1="125.2" x2="152.0" y2="50.4"/>
+<circle class="pt" cx="140" cy="68" r="3.5"/><circle class="pt" cx="110" cy="112" r="3"/>
+<text x="134" y="132">x₀</text><text x="92" y="132">x₁</text>
+</svg>
+</header>
+<nav class="toc" aria-label="Contents">
+  <p class="toc-title">In this section</p>
+  <ol>
+<li><a href="#sec15-1"><span class="tnum">15.1</span><span class="ttl">Free nodes</span></a></li>
+<li><a href="#sec15-2"><span class="tnum">15.2</span><span class="ttl">Gaussian quadratures with two and three points</span></a></li>
+<li><a href="#sec15-3"><span class="tnum">15.3</span><span class="ttl">The general construction</span></a></li>
+<li><a href="#sec15-4"><span class="tnum">15.4</span><span class="ttl">An arbitrary interval and the error</span></a></li>
+<li><a href="#sec15-5"><span class="tnum">15.5</span><span class="ttl">Python code</span></a></li>
+<li><a href="#sec15-6"><span class="tnum">15.6</span><span class="ttl">Exercises</span></a></li>
+  </ol>
+</nav>
+<article class="notes">
+<h2 id="sec15-1"><span class="secnum">15.1</span><span class="sectitle">Free nodes</span></h2>
+<p>In the previous section I approximated <span class="math display">\[
+\int_a^b f(x)\D x\approx\sum_{j=0}^n w_jf(x_j)
+\]</span> by choosing <span class="math inline">\(n+1\)</span> equally spaced points <span class="math inline">\(x_0,\ldots,x_n\)</span> and computing the weights <span class="math inline">\(w_0,\ldots,w_n\)</span>. Since the weights are my only free parameters, there are <span class="math inline">\(n+1\)</span> of them, and I can make the formula exact for any polynomial of degree at most <span class="math inline">\(n\)</span>, which also has <span class="math inline">\(n+1\)</span> coefficients (for even <span class="math inline">\(n\)</span> I got one more degree as a bonus because of the symmetry).</p>
+<p>Now let me ask a different question: what if I am allowed to choose not only the weights but also the points <span class="math inline">\(x_j\)</span>? Then I have <span class="math inline">\(2n+2\)</span> free parameters, and I can hope to make my formula exact for any polynomial of degree at most <span class="math inline">\(2n+1\)</span>, since such a polynomial has exactly <span class="math inline">\(2n+2\)</span> coefficients. The resulting formulas are called <em>Gaussian quadratures</em>. Below I will work on the interval <span class="math inline">\([-1,1]\)</span>, and at the end I will move to an arbitrary interval <span class="math inline">\([a,b]\)</span> using the linear change of variables from the previous section.</p>
+<h2 id="sec15-2"><span class="secnum">15.2</span><span class="sectitle">Gaussian quadratures with two and three points</span></h2>
+<p>Let me start with the method of undetermined coefficients.</p>
+<div class="thm example style-definition" id="example-15-1"><p><span class="thm-head">Example 15.1 (Two points).</span> I am looking for the formula <span class="math display">\[
+\int_{-1}^1f(x)\D x\approx w_0f(x_0)+w_1f(x_1),
+\]</span> which is exact for <span class="math inline">\(1,x,x^2,x^3\)</span>. Since the interval <span class="math inline">\([-1,1]\)</span> is symmetric with respect to zero, it is natural to look for symmetric points <span class="math inline">\(x_0=-t\)</span>, <span class="math inline">\(x_1=t\)</span> with <span class="math inline">\(t&gt;0\)</span>, and equal weights <span class="math inline">\(w_0=w_1=w\)</span>. Then for any odd function the formula gives zero, as the integral itself, and hence the formula is automatically exact for <span class="math inline">\(x\)</span> and <span class="math inline">\(x^3\)</span>. For <span class="math inline">\(1\)</span> and <span class="math inline">\(x^2\)</span> I have <span class="math display">\[
+2=\int_{-1}^1 1\D x=2w,\quad \frac{2}{3}=\int_{-1}^1 x^2\D x=2wt^2,
+\]</span> and hence <span class="math inline">\(w=1\)</span>, <span class="math inline">\(t=1/\sqrt{3}\)</span>. My first Gaussian quadrature is <span class="math display">\begin{equation}\label{eq15:1}
+\int_{-1}^1f(x)\D x\approx f\left(-\frac{1}{\sqrt 3}\right)+f\left(\frac{1}{\sqrt 3}\right),
+\end{equation}</span> which uses only two values of <span class="math inline">\(f\)</span>, and yet is exact for any polynomial of degree at most <span class="math inline">\(3\)</span>, exactly as Simpson’s rule, which needs three values.</p>
+</div>
+<div class="thm example style-definition" id="example-15-2"><p><span class="thm-head">Example 15.2 (Three points).</span> Now I take three points <span class="math inline">\(-t,0,t\)</span> with the weights <span class="math inline">\(w_0\)</span>, <span class="math inline">\(w_1\)</span>, <span class="math inline">\(w_0\)</span>, respectively. Again, the formula is automatically exact for any odd function, and I need to make it exact for <span class="math inline">\(1,x^2,x^4\)</span>: <span class="math display">\[
+2w_0+w_1=2,\quad 2w_0t^2=\frac 23\,,\quad 2w_0t^4=\frac{2}{5}\,.
+\]</span> Dividing the third equation by the second one, I find <span class="math inline">\(t^2=3/5\)</span>, and then <span class="math inline">\(w_0=5/9\)</span>, <span class="math inline">\(w_1=8/9\)</span>, i.e., <span class="math display">\begin{equation}\label{eq15:2}
+\int_{-1}^1f(x)\D x\approx \frac{5}{9}f\left(-\sqrt{\frac 35}\right)+\frac{8}{9}f(0)+\frac{5}{9}f\left(\sqrt{\frac 35}\right),
+\end{equation}</span> which is exact for any polynomial of degree at most <span class="math inline">\(5\)</span>.</p>
+</div>
+<p>For larger <span class="math inline">\(n\)</span> the equations for the weights and points become nonlinear and quite messy, and therefore I need a better approach.</p>
+<h2 id="sec15-3"><span class="secnum">15.3</span><span class="sectitle">The general construction</span></h2>
+<p>Here is the key observation. Let <span class="math display">\[
+\pi_{n+1}(x)=(x-x_0)(x-x_1)\ldots(x-x_n)
+\]</span> be the polynomial of degree <span class="math inline">\(n+1\)</span> that vanishes at my points (as in Section 13). If my formula is exact for all polynomials of degree at most <span class="math inline">\(2n+1\)</span>, then, in particular, it is exact for <span class="math inline">\(\pi_{n+1}(x)x^k\)</span>, <span class="math inline">\(k=0,\ldots,n\)</span>, and since <span class="math inline">\(\pi_{n+1}(x_j)=0\)</span> for all <span class="math inline">\(j\)</span>, I must have <span class="math display">\begin{equation}\label{eq15:3}
+\int_{-1}^1\pi_{n+1}(x)x^k\D x=0,\quad k=0,\ldots,n.
+\end{equation}</span> Since <span class="math inline">\(\pi_{n+1}(x)=x^{n+1}+c_nx^n+\ldots+c_1x+c_0\)</span>, conditions <span class="math inline">\(\eqref{eq15:3}\)</span> form a system of <span class="math inline">\(n+1\)</span> <em>linear</em> equations for the <span class="math inline">\(n+1\)</span> unknown coefficients <span class="math inline">\(c_0,\ldots,c_n\)</span>; the element of its matrix in row <span class="math inline">\(k\)</span> and column <span class="math inline">\(i\)</span> is <span class="math inline">\(\int_{-1}^1x^{i+k}\D x\)</span>. It can be shown that this system always has a unique solution. Note that if I worked on <span class="math inline">\([0,1]\)</span> instead of <span class="math inline">\([-1,1]\)</span>, these elements would be <span class="math inline">\(\int_0^1x^{i+k}\D x=1/(i+k+1)\)</span>, i.e., the matrix of the system would be exactly the Hilbert matrix <span class="math inline">\(\bs H_{n+1}\)</span> from Section 11. Hence solving this system numerically is not a good way to find the points for large <span class="math inline">\(n\)</span> (see Exercise <a href="#exer:15:ill">15.4</a>); I will use it only for the theory.</p>
+<div class="thm example style-definition" id="example-15-3"><p><span class="thm-head">Example 15.3.</span> Let <span class="math inline">\(n=1\)</span>, i.e., <span class="math inline">\(\pi_2(x)=x^2+c_1x+c_0\)</span>. Conditions <span class="math inline">\(\eqref{eq15:3}\)</span> give <span class="math display">\[
+\int_{-1}^1(x^2+c_1x+c_0)\D x=\frac 23+2c_0=0,\quad \int_{-1}^1(x^3+c_1x^2+c_0x)\D x=\frac{2c_1}{3}=0,
+\]</span> hence <span class="math inline">\(\pi_2(x)=x^2-\frac 13\)</span>, whose roots are <span class="math inline">\(\pm\frac{1}{\sqrt 3}\)</span>, exactly the points in <span class="math inline">\(\eqref{eq15:1}\)</span>.</p>
+</div>
+<p>To use the roots of <span class="math inline">\(\pi_{n+1}\)</span> as my points, I need to make sure that they are real, distinct, and belong to the interval of integration.</p>
+<div class="thm lemma style-plain" id="lemma-15-4"><p><span class="thm-head">Lemma 15.4.</span> Let <span class="math inline">\(\pi_{n+1}\)</span> be a polynomial of degree <span class="math inline">\(n+1\)</span> satisfying <span class="math inline">\(\eqref{eq15:3}\)</span>. Then <span class="math inline">\(\pi_{n+1}\)</span> has <span class="math inline">\(n+1\)</span> distinct real roots in <span class="math inline">\((-1,1)\)</span>.</p>
+</div>
+<div class="proof"><p><span class="thm-head">Proof.</span> Let <span class="math inline">\(z_1,\ldots,z_m\)</span> be the points in <span class="math inline">\((-1,1)\)</span> at which <span class="math inline">\(\pi_{n+1}\)</span> changes its sign, and assume that <span class="math inline">\(m\leq n\)</span>. Then the polynomial <span class="math display">\[
+\pi_{n+1}(x)(x-z_1)\ldots(x-z_m)
+\]</span> does not change its sign on <span class="math inline">\((-1,1)\)</span> and is not identically zero, and hence its integral over <span class="math inline">\([-1,1]\)</span> is not zero. On the other hand, <span class="math inline">\((x-z_1)\ldots(x-z_m)\)</span> is a polynomial of degree <span class="math inline">\(m\leq n\)</span>, i.e., a combination of <span class="math inline">\(1,x,\ldots,x^n\)</span>, and by <span class="math inline">\(\eqref{eq15:3}\)</span> this integral is zero. This contradiction shows that <span class="math inline">\(m\geq n+1\)</span>, i.e., <span class="math inline">\(\pi_{n+1}\)</span> changes its sign at least <span class="math inline">\(n+1\)</span> times in <span class="math inline">\((-1,1)\)</span>. Since a polynomial of degree <span class="math inline">\(n+1\)</span> cannot have more than <span class="math inline">\(n+1\)</span> roots, all its roots are real, distinct, and lie in <span class="math inline">\((-1,1)\)</span>. <span class="qed">&#9632;</span></p></div>
+<p>Now I take the roots of <span class="math inline">\(\pi_{n+1}\)</span> as my points <span class="math inline">\(x_0,\ldots,x_n\)</span>, and, exactly as for the Newton–Cotes formulas, I take the weights <span class="math display">\begin{equation}\label{eq15:4}
+w_k=\int_{-1}^1L_k(x)\D x,\quad k=0,\ldots,n,
+\end{equation}</span> where <span class="math inline">\(L_k\)</span> are the polynomials from the Lagrange interpolation polynomial. Recall that with these weights the formula is exact for any polynomial of degree at most <span class="math inline">\(n\)</span>.</p>
+<div class="thm theorem style-plain" id="theorem-15-5"><p><span class="thm-head">Theorem 15.5.</span> Let <span class="math inline">\(x_0,\ldots,x_n\)</span> be the roots of <span class="math inline">\(\pi_{n+1}\)</span> satisfying <span class="math inline">\(\eqref{eq15:3}\)</span>, and let the weights be given by <span class="math inline">\(\eqref{eq15:4}\)</span>. Then the formula <span class="math display">\[
+\int_{-1}^1f(x)\D x\approx\sum_{k=0}^nw_kf(x_k)
+\]</span> is exact for any polynomial of degree at most <span class="math inline">\(2n+1\)</span>. Moreover, no formula with <span class="math inline">\(n+1\)</span> points is exact for all polynomials of degree <span class="math inline">\(2n+2\)</span>.</p>
+</div>
+<div class="proof"><p><span class="thm-head">Proof.</span> Let <span class="math inline">\(p\)</span> be a polynomial of degree at most <span class="math inline">\(2n+1\)</span>. I divide it by <span class="math inline">\(\pi_{n+1}\)</span> with remainder: <span class="math display">\[
+p(x)=q(x)\pi_{n+1}(x)+r(x),
+\]</span> where <span class="math inline">\(q\)</span> and <span class="math inline">\(r\)</span> are polynomials of degree at most <span class="math inline">\(n\)</span>. For the exact integral I have, by <span class="math inline">\(\eqref{eq15:3}\)</span>, <span class="math display">\[
+\int_{-1}^1p(x)\D x=\int_{-1}^1q(x)\pi_{n+1}(x)\D x+\int_{-1}^1r(x)\D x=\int_{-1}^1r(x)\D x.
+\]</span> For my formula I have, since <span class="math inline">\(\pi_{n+1}(x_k)=0\)</span>, <span class="math display">\[
+\sum_{k=0}^nw_kp(x_k)=\sum_{k=0}^nw_kq(x_k)\pi_{n+1}(x_k)+\sum_{k=0}^nw_kr(x_k)=\sum_{k=0}^nw_kr(x_k).
+\]</span> Finally, <span class="math inline">\(r\)</span> is a polynomial of degree at most <span class="math inline">\(n\)</span>, for which my formula is exact, and hence the right-hand sides of the last two equalities coincide.</p>
+<p>For the second statement, take any points <span class="math inline">\(x_0,\ldots,x_n\)</span> and consider <span class="math inline">\(p(x)=(x-x_0)^2\ldots(x-x_n)^2\)</span> of degree <span class="math inline">\(2n+2\)</span>. Any formula with these points gives zero for <span class="math inline">\(p\)</span>, whereas <span class="math display">\[
+\int_{-1}^1p(x)\D x&gt;0.
+\]</span> <span class="qed">&#9632;</span></p></div>
+<div class="thm remark style-definition" id="remark-15-6"><p><span class="thm-head">Remark 15.6.</span> The weights of a Gaussian quadrature are always positive. Indeed, <span class="math inline">\(L_k^2\)</span> is a polynomial of degree <span class="math inline">\(2n\)</span>, for which the formula is exact, and <span class="math inline">\(L_k(x_j)=0\)</span> for <span class="math inline">\(j\neq k\)</span>, <span class="math inline">\(L_k(x_k)=1\)</span>. Hence <span class="math display">\[
+0&lt;\int_{-1}^1L_k^2(x)\D x=\sum_{j=0}^nw_jL_k^2(x_j)=w_k.
+\]</span> This is an important difference from the Newton–Cotes formulas, whose weights become negative for large <span class="math inline">\(n\)</span> (in Section 14 this happened already for <span class="math inline">\(n=8\)</span>), which makes them sensitive to rounding errors.</p>
+</div>
+<div class="thm remark style-definition" id="remark-15-7"><p><span class="thm-head">Remark 15.7.</span> The polynomials <span class="math inline">\(\pi_{n+1}\)</span> defined by <span class="math inline">\(\eqref{eq15:3}\)</span> are, up to a constant factor, the so-called <em>Legendre polynomials</em>, and their roots and the corresponding weights are tabulated and available in standard software packages. I will not need any of their properties beyond what I proved above.</p>
+</div>
+<h2 id="sec15-4"><span class="secnum">15.4</span><span class="sectitle">An arbitrary interval and the error</span></h2>
+<p>To use a Gaussian quadrature on <span class="math inline">\([a,b]\)</span>, I use the change of variables <span class="math inline">\(x=\varphi(t)=\frac{b-a}{2}\,t+\frac{a+b}{2}\)</span>, which maps <span class="math inline">\([-1,1]\)</span> onto <span class="math inline">\([a,b]\)</span> (see Section 14): <span class="math display">\[
+\int_a^bf(x)\D x=\frac{b-a}{2}\int_{-1}^1f(\varphi(t))\D t\approx\frac{b-a}{2}\sum_{k=0}^nw_kf\left(\frac{b-a}{2}\,t_k+\frac{a+b}{2}\right),
+\]</span> where <span class="math inline">\(t_k\)</span> and <span class="math inline">\(w_k\)</span> are the points and weights on <span class="math inline">\([-1,1]\)</span>.</p>
+<p>It can be shown that if <span class="math inline">\(f\in C^{2n+2}[a,b]\)</span> then the error of the Gaussian quadrature with <span class="math inline">\(n+1\)</span> points is <span class="math display">\[
+\frac{(b-a)^{2n+3}\bigl((n+1)!\bigr)^4}{(2n+3)\bigl((2n+2)!\bigr)^3}\,f^{(2n+2)}(\xi)
+\]</span> for some <span class="math inline">\(\xi\in(a,b)\)</span>. For instance, for two points (<span class="math inline">\(n=1\)</span>) the error is <span class="math inline">\(\frac{(b-a)^5}{4320}f^{(4)}(\xi)\)</span>, whereas for Simpson’s rule, which uses three points, it is <span class="math inline">\(\frac{(b-a)^5}{2880}f^{(4)}(\xi)\)</span> in absolute value (recall that <span class="math inline">\(h=(b-a)/2\)</span> in the estimate <span class="math inline">\(h^5M_4/90\)</span>).</p>
+<div class="thm example style-definition" id="example-15-8"><p><span class="thm-head">Example 15.8.</span> Consider again <span class="math display">\[
+\int_0^1e^x\D x=e-1\approx 1.718281828459045.
+\]</span> Simpson’s rule with three values of <span class="math inline">\(f\)</span> gives the error <span class="math inline">\(5.8\cdot 10^{-4}\)</span>. The Gaussian quadrature with two points gives the error <span class="math inline">\(3.9\cdot 10^{-4}\)</span>, and with three points the error is <span class="math inline">\(8.2\cdot 10^{-7}\)</span>, i.e., about 700 times smaller than for Simpson’s rule with the same number of values of <span class="math inline">\(f\)</span>.</p>
+</div>
+<h2 id="sec15-5"><span class="secnum">15.5</span><span class="sectitle">Python code</span></h2>
+<p>In practice the points and weights on <span class="math inline">\([-1,1]\)</span> are computed by a library function; for instance, <code>np.polynomial.legendre.leggauss(m)</code> returns the arrays of <span class="math inline">\(m\)</span> points and <span class="math inline">\(m\)</span> weights (here <span class="math inline">\(m=n+1\)</span> is the number of points). The sum <span class="math inline">\(\sum_k w_kf(x_k)\)</span> is the dot product of the array of the weights and the array of the values of <span class="math inline">\(f\)</span>, which is written <code>w @ f(x)</code> (Section 9).</p>
+<pre class="code script"><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">gauss</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The Gaussian quadrature with m points for the integral of f over [a, b].&quot;&quot;&quot;</span>
+    <span class="n">t</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polynomial</span><span class="o">.</span><span class="n">legendre</span><span class="o">.</span><span class="n">leggauss</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>   <span class="c1"># the points and weights on [-1, 1]</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">t</span> <span class="o">+</span> <span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>           <span class="c1"># the points mapped to [a, b]</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">w</span> <span class="o">@</span> <span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+
+<span class="n">exact</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">e</span> <span class="o">-</span> <span class="mi">1</span>
+<span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">):</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">gauss</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.15f</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="nb">abs</span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">exact</span><span class="p">)</span><span class="si">:</span><span class="s2">.1e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></code></pre>
+<pre class="pyout"><code>1  1.648721270700128  7.0e-02
+2  1.717896378007504  3.9e-04
+3  1.718281004372522  8.2e-07
+4  1.718281827526078  9.3e-10
+5  1.718281828458391  6.5e-13</code></pre>
+<p>With only five values of <span class="math inline">\(f\)</span> I get the integral with an error of order <span class="math inline">\(10^{-13}\)</span>. Compare this with Section 14: the composite trapezoidal rule (the function <code>trapezoid_tol</code>) needed <span class="math inline">\(262145\)</span> values of <span class="math inline">\(f\)</span> to get an error of about <span class="math inline">\(2\cdot 10^{-12}\)</span>, and even the composite Simpson’s rule (<code>simpson_tol</code>) needed <span class="math inline">\(513\)</span> values to get an error of about <span class="math inline">\(10^{-13}\)</span>. Similarly to the Newton–Cotes formulas, for less smooth functions or long intervals one can use composite Gaussian quadratures, dividing <span class="math inline">\([a,b]\)</span> into subintervals and using a Gaussian quadrature with a small number of points on each of them (Exercise <a href="#exer:15:composite">15.5</a>).</p>
+<p>As in the case of polynomial interpolation, where choosing the Chebyshev points instead of equally spaced ones made a huge difference (Section 13), the main lesson here is that the choice of the points matters a lot.</p>
+<h2 id="sec15-6"><span class="secnum">15.6</span><span class="sectitle">Exercises</span></h2>
+<div class="thm exercise style-definition" id="exercise-15-1"><p><span class="thm-head">Exercise 15.1.</span> Use <span class="math inline">\(\eqref{eq15:3}\)</span> with <span class="math inline">\(n=2\)</span> to show that <span class="math inline">\(\pi_3(x)=x^3-\frac{3}{5}x\)</span>, and recover the points of <span class="math inline">\(\eqref{eq15:2}\)</span>.</p>
+</div>
+<div class="thm exercise style-definition" id="exercise-15-2"><p><span class="thm-head">Exercise 15.2.</span> Compute the weights of <span class="math inline">\(\eqref{eq15:1}\)</span> and <span class="math inline">\(\eqref{eq15:2}\)</span> directly from <span class="math inline">\(\eqref{eq15:4}\)</span>.</p>
+</div>
+<div class="thm exercise style-definition" id="exercise-15-3"><p><span class="thm-head">Exercise 15.3.</span> Check numerically that <code>gauss(f, 0, 1, m)</code> is exact (up to rounding errors) for <span class="math inline">\(f(x)=x^k\)</span> with <span class="math inline">\(k\leq 2m-1\)</span>, and not exact for <span class="math inline">\(k=2m\)</span>, for <span class="math inline">\(m=1,\ldots,5\)</span>. (Recall that <span class="math inline">\(\int_0^1x^k\D x=1/(k+1)\)</span>.)</p>
+</div>
+<div class="thm exercise style-definition" id="exer:15:ill"><p><span class="thm-head">Exercise 15.4.</span> Compute the points of the Gaussian quadrature with <span class="math inline">\(m=n+1\)</span> points by solving the linear system <span class="math inline">\(\eqref{eq15:3}\)</span> with <code>np.linalg.solve</code> and finding the roots of <span class="math inline">\(\pi_{n+1}\)</span> with <code>np.roots</code> (which takes the coefficients of a polynomial starting with the leading one, as <code>np.polyval</code>). (<em>Hint:</em> <span class="math inline">\(\int_{-1}^1x^j\D x\)</span> is <span class="math inline">\(2/(j+1)\)</span> for even <span class="math inline">\(j\)</span> and <span class="math inline">\(0\)</span> for odd <span class="math inline">\(j\)</span>.) Compare your points with the ones returned by <code>np.polynomial.legendre.leggauss(m)</code> for <span class="math inline">\(m=2,4,\ldots,20\)</span>, and compute the condition numbers of the matrices of your systems. Explain what you see.</p>
+</div>
+<div class="thm exercise style-definition" id="exer:15:composite"><p><span class="thm-head">Exercise 15.5.</span> Write a function <code>gauss_composite(f, a, b, m, N)</code> that divides <span class="math inline">\([a,b]\)</span> into <span class="math inline">\(N\)</span> equal intervals and applies the Gaussian quadrature with <span class="math inline">\(m\)</span> points on each of them. Try to do it without loops: the points on all the intervals can be computed at once with <code>np.outer</code> (Section 9). Find numerically the order of its error with respect to <span class="math inline">\(h=(b-a)/N\)</span> for <span class="math inline">\(m=1,2,3\)</span>, using <span class="math inline">\(\int_0^1e^{-x^2}\D x\)</span> (Section 14).</p>
+</div>
+</article>
+<nav class="pager" aria-label="More sections"><a class="prev" href="14.html"><span class="dir">Previous</span><span class="pt"><span class="pnum">14</span> Newton–Cotes formulas for integration</span></a><span></span></nav>
+</main>
+</div>
+<a class="to-top" href="#" aria-label="Back to top">&uarr;</a>
+</body>
+</html>

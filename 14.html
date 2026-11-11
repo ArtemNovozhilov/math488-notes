@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Section 14: Newton–Cotes formulas for integration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,500;1,400;1,500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="style.css">
+<script>
+window.MathJax = {
+  loader: {load: ['[tex]/tagformat']},
+  tex: {
+    packages: {'[+]': ['tagformat']},
+    tags: 'ams',
+    tagformat: {number: (n) => '14.' + n},
+    macros: {
+      D: '\\mathrm{d}',
+      Div: '\\operatorname{div}',
+      E: ['\\expectation\\left(#1\\right)', 1],
+      I: '\\mathrm{i}',
+      Im: '\\mathop{\\mathrm{Im}}\\nolimits',
+      Ind: ['\\,\\mathbf{1}_{#1}', 1],
+      Int: '\\operatorname{int}',
+      N: '\\mathbf{N}',
+      Poi: ['\\poisson\\left(#1\\right)', 1],
+      Pr: ['\\probability\\left\\{#1\\right\\}', 1],
+      R: '\\mathbf{R}',
+      Re: '\\mathop{\\mathrm{Re}}\\nolimits',
+      Tr: '\\operatorname{tr}',
+      V: ['{\\mathbf{#1}}', 1],
+      Var: ['\\,\\mathrm{Var}\\left(#1\\right)', 1],
+      arctanh: '\\operatorname{arctanh}',
+      bd: '\\operatorname{bd}',
+      bs: ['{\\boldsymbol{#1}}', 1],
+      code: ['\\texttt{#1}', 1],
+      curl: '\\operatorname{curl}',
+      diag: '\\operatorname{diag}',
+      diam: '\\operatorname{diam}',
+      erf: '\\operatorname{erf}',
+      expectation: '\\operatorname{E}',
+      grad: '\\operatorname{grad}',
+      labelitemi: '$\\bullet$',
+      overbar: ['\\mkern 3.5mu\\overline{\\mkern-2mu#1\\mkern-3mu}\\mkern 3.5mu', 1],
+      pdt: '\\partial_t',
+      poisson: '\\operatorname{Poisson}',
+      probability: '\\operatorname{P}',
+      rank: '\\operatorname{rank}',
+      sign: '\\operatorname{sgn}'
+    }
+  }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<script defer src="notes.js"></script>
+</head>
+<body>
+<div class="progress" aria-hidden="true"><span></span></div>
+<header class="topbar">
+  <a class="course-name" href="index.html">Math 488/688: Numerical Analysis</a>
+  <a class="all-sections" href="index.html">All sections</a>
+</header>
+<div class="layout">
+<aside class="sidetoc" aria-label="On this page">
+  <p class="sidetoc-title">Section 14</p>
+  <ol>
+<li><a href="#sec14-1"><span class="tnum">14.1</span><span class="ttl">Introductory discussion</span></a></li>
+<li><a href="#sec14-2"><span class="tnum">14.2</span><span class="ttl">Newton–Cotes formulas</span></a></li>
+<li><a href="#sec14-3"><span class="tnum">14.3</span><span class="ttl">The method of undetermined coefficients</span></a></li>
+<li><a href="#sec14-4"><span class="tnum">14.4</span><span class="ttl">Composite Newton–Cotes formulas</span></a></li>
+<li><a href="#sec14:back"><span class="tnum">14.5</span><span class="ttl">Back to Section 1</span></a></li>
+<li><a href="#sec14-6"><span class="tnum">14.6</span><span class="ttl">Implementation</span></a></li>
+<li><a href="#sec14-7"><span class="tnum">14.7</span><span class="ttl">Exercises</span></a></li>
+  </ol>
+</aside>
+<main>
+<header class="hero">
+  <span class="bignum" aria-hidden="true">14</span>
+  <div class="hero-text">
+    <p class="kicker">Section</p>
+    <h1>Newton–Cotes formulas for integration</h1>
+    <p class="byline">Math 488/688: Numerical Analysis<br>e-mail: <a href="mailto:artem.novozhilov@ndsu.edu">artem.novozhilov@ndsu.edu</a>. Fall 2026</p>
+  </div>
+  <svg class="emblem" viewBox="0 0 160 160" aria-hidden="true">
+<line x1="8" y1="112" x2="156" y2="112"/>
+<polyline class="curve" points="20.0,156.0 21.2,156.0 22.4,156.0 23.6,155.9 24.8,155.9 26.0,155.8 27.2,155.7 28.4,155.6 29.6,155.4 30.8,155.3 32.0,155.1 33.2,154.9 34.4,154.7 35.6,154.5 36.8,154.3 38.0,154.0 39.2,153.7 40.4,153.5 41.6,153.1 42.8,152.8 44.0,152.5 45.2,152.1 46.4,151.7 47.6,151.3 48.8,150.9 50.0,150.5 51.2,150.1 52.4,149.6 53.6,149.1 54.8,148.6 56.0,148.1 57.2,147.5 58.4,147.0 59.6,146.4 60.8,145.8 62.0,145.2 63.2,144.6 64.4,144.0 65.6,143.3 66.8,142.6 68.0,141.9 69.2,141.2 70.4,140.5 71.6,139.7 72.8,139.0 74.0,138.2 75.2,137.4 76.4,136.6 77.6,135.7 78.8,134.9 80.0,134.0 81.2,133.1 82.4,132.2 83.6,131.3 84.8,130.3 86.0,129.4 87.2,128.4 88.4,127.4 89.6,126.4 90.8,125.4 92.0,124.3 93.2,123.3 94.4,122.2 95.6,121.1 96.8,120.0 98.0,118.8 99.2,117.7 100.4,116.5 101.6,115.3 102.8,114.1 104.0,112.9 105.2,111.6 106.4,110.4 107.6,109.1 108.8,107.8 110.0,106.5 111.2,105.2 112.4,103.8 113.6,102.5 114.8,101.1 116.0,99.7 117.2,98.3 118.4,96.8 119.6,95.4 120.8,93.9 122.0,92.4 123.2,90.9 124.4,89.4 125.6,87.9 126.8,86.3 128.0,84.7 129.2,83.1 130.4,81.5 131.6,79.9 132.8,78.2 134.0,76.6 135.2,74.9 136.4,73.2 137.6,71.5 138.8,69.8 140.0,68.0 141.2,66.2 142.4,64.4 143.6,62.6 144.8,60.8 146.0,59.0 147.2,57.1 148.4,55.2 149.6,53.4 150.8,51.4 152.0,49.5"/>
+<line class="dash" x1="140" y1="112" x2="140" y2="68"/>
+<line class="ray" x1="101.0" y1="125.2" x2="152.0" y2="50.4"/>
+<circle class="pt" cx="140" cy="68" r="3.5"/><circle class="pt" cx="110" cy="112" r="3"/>
+<text x="134" y="132">x₀</text><text x="92" y="132">x₁</text>
+</svg>
+</header>
+<nav class="toc" aria-label="Contents">
+  <p class="toc-title">In this section</p>
+  <ol>
+<li><a href="#sec14-1"><span class="tnum">14.1</span><span class="ttl">Introductory discussion</span></a></li>
+<li><a href="#sec14-2"><span class="tnum">14.2</span><span class="ttl">Newton–Cotes formulas</span></a></li>
+<li><a href="#sec14-3"><span class="tnum">14.3</span><span class="ttl">The method of undetermined coefficients</span></a></li>
+<li><a href="#sec14-4"><span class="tnum">14.4</span><span class="ttl">Composite Newton–Cotes formulas</span></a></li>
+<li><a href="#sec14:back"><span class="tnum">14.5</span><span class="ttl">Back to Section 1</span></a></li>
+<li><a href="#sec14-6"><span class="tnum">14.6</span><span class="ttl">Implementation</span></a></li>
+<li><a href="#sec14-7"><span class="tnum">14.7</span><span class="ttl">Exercises</span></a></li>
+  </ol>
+</nav>
+<article class="notes">
+<h2 id="sec14-1"><span class="secnum">14.1</span><span class="sectitle">Introductory discussion</span></h2>
+<p>Recall that the definite integral of a sufficiently nice function <span class="math inline">\(f\)</span> on the interval <span class="math inline">\([a,b]\)</span> is denoted <span class="math display">\[
+\int_a^b f(x)\D x,
+\]</span> and has the geometric meaning of the signed area between the graph of <span class="math inline">\(f\)</span> and the <span class="math inline">\(x\)</span>-axis. The word “signed” means that I take this area with the sign “plus” if <span class="math inline">\(f(x)&gt;0\)</span> and with the sign “minus” if <span class="math inline">\(f(x)&lt;0\)</span>. In Calculus we usually use <em>the fundamental theorem of calculus</em> to evaluate the definite integral, i.e., <span class="math display">\[
+\int_a^b f(x)\D x=F(b)-F(a),
+\]</span> where <span class="math inline">\(F\)</span> is any antiderivative of <span class="math inline">\(f\)</span>, i.e., <span class="math inline">\(F'(x)=f(x)\)</span>. For instance, <span class="math display">\[
+\int_0^1 e^x\D x=\left.e^x\right|_{0}^1=e^1-e^0=e-1\approx 1.72,
+\]</span> since <span class="math inline">\(e^x\)</span> is an antiderivative of <span class="math inline">\(e^x\)</span>. It is, however, true that there are functions whose antiderivatives cannot be written down if we are allowed to use only the <em>elementary</em> functions: polynomials, rational functions, trig functions, <span class="math inline">\(\exp\)</span> and <span class="math inline">\(\log\)</span>, and their combinations. The very first problem in these notes (Section 1) was such an example: <span class="math display">\[
+\int_0^1 e^{-x^2}\D x.
+\]</span> It can be proven (though not in an elementary way) that no antiderivative of <span class="math inline">\(f(x)=e^{-x^2}\)</span> is an elementary function. Do not get me wrong: all I am saying is that this antiderivative is impossible to write down with our usual supply of functions, not that there is no such thing as the definite integral itself. As a matter of fact, if you recall your Calculus class, you should be able to write this antiderivative down as <span class="math display">\[
+F(x)=\int_0^x e^{-s^2}\D s,
+\]</span> which, by the second part of the fundamental theorem of calculus, implies that <span class="math display">\[
+F'(x)=e^{-x^2}.
+\]</span> But how to compute <span class="math inline">\(F\)</span> at any given point <span class="math inline">\(x\)</span>? For this I need approximate numerical methods. In Section 1 I used the simplest one, the leftpoint rule <span class="math inline">\(L_n\)</span>, and in Section 2 I implemented it as the function <code>leftpoint(f, a, b, n)</code>. I also observed there that the error of <span class="math inline">\(L_n\)</span> decreases as <span class="math inline">\(1/n\)</span>, namely, that <span class="math inline">\(n\)</span> times the error approaches the number <span class="math inline">\(0.316\ldots\)</span>, and I promised to come back to this. It is my goal in this section to look at such methods from a more theoretical point of view, to explain this number, and to find much better methods.</p>
+<h2 id="sec14-2"><span class="secnum">14.2</span><span class="sectitle">Newton–Cotes formulas</span></h2>
+<p>Again, the goal is to compute <span class="math display">\begin{equation}\label{eq14:1}
+  \int_a^b f(x)\D x.
+\end{equation}</span> If I divide the interval <span class="math inline">\([a,b]\)</span> into <span class="math inline">\(n\)</span> subintervals and take the <span class="math inline">\(n+1\)</span> points <span class="math display">\[
+x_j=a+jh,\quad h=\frac{b-a}{n}\,,\quad j=0,\ldots, n,
+\]</span> then I can compute the Lagrange interpolation polynomial of degree at most <span class="math inline">\(n\)</span> (Section 13), <span class="math display">\[
+p_n(x)=\sum_{k=0}^n L_k(x)f(x_k),
+\]</span> which hopefully will be close to my function: <span class="math display">\[
+p_n(x)\approx f(x),\quad x\in[a,b].
+\]</span> (Remember that this is not always true!)</p>
+<p>Taking different <span class="math inline">\(n\)</span> I will get different formulas, specifically, <span class="math display">\begin{equation}\label{eq14:2}
+  \int_a^b f(x)\D x\approx\int_a^b p_n(x)\D x=\sum_{k=0}^n f(x_k)\int_a^b L_k(x)\D x.
+\end{equation}</span> Formulas <span class="math inline">\(\eqref{eq14:2}\)</span> are called the Newton–Cotes formulas of degree <span class="math inline">\(n\)</span> (many textbooks say “of order <span class="math inline">\(n\)</span>”; I avoid this, since the word “order” is already used for the speed of convergence, see Sections 4–6, and will be used in this sense below). To be able to use them, I need to compute the weights <span class="math display">\[
+w_k = \int_a^b L_k(x)\D x,\quad k=0,\ldots,n,
+\]</span> which depend <em>only</em> on the mesh points <span class="math inline">\(x_j\)</span>. Once computed, they can be used for any given function <span class="math inline">\(f\)</span> on the interval <span class="math inline">\([a,b]\)</span>: <span class="math display">\[
+\int_a^b f(x)\D x\approx w_0 f_0+w_1 f_1+\ldots +w_{n-1}f_{n-1}+w_n f_n,
+\]</span> where I use the notation <span class="math inline">\(f_j=f(x_j)\)</span>, which will be convenient below.</p>
+<p>Now let me switch from the general discussion to some concrete examples.</p>
+<div class="thm example style-definition" id="example-14-1"><p><span class="thm-head">Example 14.1 (Trapezoidal rule).</span> Take <span class="math inline">\(n=1\)</span> for my interpolation polynomial (I cannot take <span class="math inline">\(n=0\)</span>, since I always want to include at least two points <span class="math inline">\(x_0=a\)</span> and <span class="math inline">\(x_n=b\)</span>, but see below). The geometric meaning of this approximation should be clear: I replace the area under the graph of my function <span class="math inline">\(f\)</span> with the area of the trapezoid with vertices at <span class="math inline">\((x_0,0),(x_0,f_0),(x_1,f_1),(x_1,0)\)</span> (make a picture!). Denoting <span class="math inline">\(h=b-a\)</span>, I immediately get that the area of this trapezoid is <span class="math inline">\(h(f_0+f_1)/2\)</span>, which will be my Newton–Cotes formula of degree 1: <span class="math display">\[
+\int_a^b f(x)\D x\approx \frac{h}{2}(f_0+f_1).
+\]</span> Let me derive the same formula using the Lagrange interpolation polynomial.</p>
+<p>I have <span class="math display">\[
+p_1(x)=f_0\frac{x-x_1}{x_0-x_1}+f_1\frac{x-x_0}{x_1-x_0}=f_0\frac{x-x_1}{-h}+f_1\frac{x-x_0}{h}\,.
+\]</span> In this case <span class="math inline">\(x_0=a\)</span> and <span class="math inline">\(x_1=b\)</span>, hence <span class="math display">\[
+\int_{x_0}^{x_1}p_1(x)\D x=-\frac{f_0}{h}\int_{x_0}^{x_1}(x-x_1)\D x+\frac{f_1}{h}\int_{x_0}^{x_1}(x-x_0)\D x=\frac{h}{2}(f_0+f_1),
+\]</span> as expected.</p>
+</div>
+<div class="thm example style-definition" id="example-14-2"><p><span class="thm-head">Example 14.2 (Simpson’s rule).</span> Now it is time to tackle the case <span class="math inline">\(n=2\)</span>. My points are now <span class="math inline">\(x_0=a\)</span>, <span class="math inline">\(x_1=(a+b)/2\)</span>, <span class="math inline">\(x_2=b\)</span>, and <span class="math inline">\(h=(b-a)/2\)</span>.</p>
+<p>To apply this case I need <span class="math inline">\(w_0,w_1,w_2\)</span>. Specifically, <span class="math display">\[
+w_0=\int_{x_0}^{x_2} L_0(x)\D x=\int_{x_0}^{x_2}\frac{(x-x_1)(x-x_2)}{(x_0-x_1)(x_0-x_2)}\D x=\frac{1}{2h^2}\int_{x_0}^{x_2}(x-x_1)(x-x_2)\D x.
+\]</span> I could have computed the last integral directly, but instead I will make the substitution <span class="math display">\[
+x = ht+x_1.
+\]</span> I get (remember that you need to change the expression under the integral sign, the limits of integration, and <span class="math inline">\(\D x\)</span>): <span class="math display">\[
+w_0=\frac{1}{2h^2}\int_{-1}^1 ht(ht-h)h\D t=\frac{h}{2}\int_{-1}^1t(t-1)\D t=\frac{h}{3}\,.
+\]</span></p>
+<p>Similarly (an exercise) I can find <span class="math display">\[
+w_1=\frac{4h}{3},\quad w_2=w_0=\frac{h}{3}\,.
+\]</span></p>
+<p>Summarizing, my Newton–Cotes formula of degree 2 is given by <span class="math display">\[
+\int_a^bf(x)\D x\approx\frac{h}{3}(f_0+4f_1+f_2),
+\]</span> which is called Simpson’s rule (and I hope you recognize this formula, since I would guess you saw it in your Calculus class).</p>
+</div>
+<p>Clearly, I can take <span class="math inline">\(n=3,4,\ldots\)</span>, and the list of Newton–Cotes formulas can be continued. For instance, the Newton–Cotes formula of degree <span class="math inline">\(3\)</span> is (see Exercise <a href="#exer:14:38">14.1</a>) <span class="math display">\[
+\int_{x_0}^{x_3}f(x)\D x\approx \frac{3h}{8}(f_0+3f_1+3f_2+f_3).
+\]</span> I have, however, two other related questions. The first one, of course, is what error I make when I replace my exact integral with an approximate formula. The second question is whether there is a more efficient method to produce Newton–Cotes formulas for different <span class="math inline">\(n\)</span> and, please note, for possibly <em>not equally</em> spaced <span class="math inline">\(x_j\)</span>. Let me start with the error.</p>
+<div class="thm example style-definition" id="ex14:trapezoid_error"><p><span class="thm-head">Example 14.3 (The error of the trapezoidal rule).</span> Recall that for the Lagrange interpolation polynomial <span class="math inline">\(p_n\)</span> on <span class="math inline">\([a,b]\)</span> I have the following error estimate (Section 13): <span class="math display">\[
+|f(x)-p_n(x)|\leq \frac{M_{n+1}}{(n+1)!}|\pi_{n+1}(x)|,
+\]</span> where, as before, <span class="math inline">\(M_{n+1}\)</span> is the maximum of the absolute value of the <span class="math inline">\((n+1)\)</span>-st derivative of <span class="math inline">\(f\)</span> on <span class="math inline">\([a,b]\)</span>, and <span class="math display">\[
+\pi_{n+1}(x)=(x-x_0)(x-x_1)\ldots(x-x_n)
+\]</span> is a polynomial of degree <span class="math inline">\(n+1\)</span>. Now, for my specific case <span class="math inline">\(n=1\)</span>, I have, with <span class="math inline">\(h=b-a\)</span> and the substitution <span class="math inline">\(x=ht+a\)</span>, <span class="math display">\begin{align*}
+\left|\int_a^b f(x)\D x-\int_a^b p_1(x)\D x\right|&amp;=\left|\int_a^b(f(x)-p_1(x))\D x\right|\leq \int_a^b |f(x)-p_1(x)|\D x\\
+&amp;\leq \frac{M_2}{2!}\int_a^b|\pi_2(x)|\D x= \frac{M_2}{2!}\int_a^b(x-a)(b-x)\D x\\
+&amp;=\frac{M_2}{2!}\int_0^1 ht(h-ht)h\D t=\frac{h^3M_2}{12}=\frac{M_2(b-a)^3}{12}\,.
+\end{align*}</span> In fact, I can say more. Recall from the proof of the theorem in Section 13 that <span class="math inline">\(f(x)-p_1(x)=\frac{1}{2}f''(\xi)(x-a)(x-b)\)</span>, where <span class="math inline">\(\xi\)</span> depends on <span class="math inline">\(x\)</span>. Since <span class="math inline">\((x-a)(x-b)\)</span> does not change its sign on <span class="math inline">\([a,b]\)</span>, the mean value theorem for integrals gives <span class="math display">\begin{equation}\label{eq14:3}
+\int_a^b f(x)\D x-\frac{h}{2}(f_0+f_1)=\frac{f''(\eta)}{2}\int_a^b(x-a)(x-b)\D x=-\frac{h^3}{12}f''(\eta)
+\end{equation}</span> for some <span class="math inline">\(\eta\in(a,b)\)</span>.</p>
+</div>
+<p>Not surprisingly, in my error estimate for the trapezoidal rule I have the second derivative of the function. Notice that the second derivative of a constant function or of a polynomial of degree one is zero, which implies that the trapezoidal rule is <em>exact</em> for any polynomials <span class="math inline">\(p_0,p_1\)</span>. Clearly, this is something I would expect to see. Moreover, it should be quite clear that the Newton–Cotes formula of degree <span class="math inline">\(n\)</span> is exact for any polynomial of degree <span class="math inline">\(n\)</span> or below, simply because of the uniqueness of the Lagrange interpolation polynomial, and hence the error estimate for degree <span class="math inline">\(n\)</span> must include <span class="math inline">\(M_{n+1}\)</span> and <span class="math inline">\(h^{n+2}\)</span>. For instance, my expectation for Simpson’s rule is that the error is proportional to <span class="math inline">\(h^4\)</span>. The reality, however, is better than that! Here are some mathematical details that explain it.</p>
+<div class="thm theorem style-plain" id="theorem-14-4"><p><span class="thm-head">Theorem 14.4.</span> Consider a Newton–Cotes formula of degree <span class="math inline">\(n\)</span>: <span class="math display">\[
+\int_a^b f(x)\D x\approx\sum_{j=0}^n w_j f_j.
+\]</span> Then <span class="math display">\[
+w_j=w_{n-j},
+\]</span> and, moreover, if <span class="math inline">\(n\)</span> is even, the resulting approximate formula is exact for any polynomial of degree <span class="math inline">\(n+1\)</span>.</p>
+</div>
+<div class="proof"><p><span class="thm-head">Proof.</span> Let <span class="math inline">\(x_j=a+hj\)</span>, <span class="math inline">\(j=0,\ldots, n\)</span>, <span class="math inline">\(h=(b-a)/n\)</span>. I have <span class="math inline">\(x_{n-j}=a+(n-j)h=b-hj\)</span>, and hence <span class="math inline">\(x_j=a+b-x_{n-j}\)</span>.</p>
+<p>Now, by definition, <span class="math display">\[
+w_j=\int_a^b\prod_{i=0,i\neq j}^n\frac{x-x_i}{x_j-x_i}\D x=(x=a+b -y)=-\int_b^a\prod_{i=0,i\neq j}^n\frac{a+b-y-x_i}{x_j-x_i}\D y.
+\]</span> Using the above expression for <span class="math inline">\(x_j\)</span> I find <span class="math display">\[
+w_j=\int_a^b\prod_{i=0,i\neq j}^n \frac{x_{n-i}-y}{x_{n-i}-x_{n-j}}\D y=\int_a^b\prod_{k=0,k\neq n-j}^n\frac{y-x_k}{x_{n-j}-x_k}\D y=w_{n-j},
+\]</span> as required (note that I relabeled the index in the product).</p>
+<p>Now I know that my formula must be exact for any polynomial of degree <span class="math inline">\(n\)</span>. Assume that <span class="math inline">\(n\)</span> is even and consider the polynomial <span class="math display">\[
+q(x)=\left(x-\frac{a+b}{2}\right)^{n+1}\,.
+\]</span> This polynomial has odd degree and is antisymmetric with respect to the center of the interval <span class="math inline">\([a,b]\)</span>, meaning that <span class="math inline">\(q(x_j)=-q(x_{n-j})\)</span> and <span class="math inline">\(q(x_{n/2})=0\)</span>. Therefore, <span class="math inline">\(\int_a^b q(x)\D x=0\)</span> by antisymmetry, and, since <span class="math inline">\(w_j=w_{n-j}\)</span>, the terms of the sum cancel pairwise: <span class="math display">\[
+\int_a^b q(x)\D x=0=\sum_{j=0}^n w_jq(x_j),
+\]</span> i.e., the formula is exact for <span class="math inline">\(q\)</span>. Finally, any polynomial <span class="math inline">\(p_{n+1}\)</span> of degree <span class="math inline">\(n+1\)</span> can be represented as <span class="math display">\[
+p_{n+1}(x)=Aq(x)+r_n(x),
+\]</span> where <span class="math inline">\(A\)</span> is some constant and <span class="math inline">\(r_n\)</span> is a polynomial of degree at most <span class="math inline">\(n\)</span>; therefore, the Newton–Cotes formula is exact for any polynomial of degree <span class="math inline">\(n+1\)</span>. <span class="qed">&#9632;</span></p></div>
+<p>The discussion above implies that Simpson’s rule is exact for any polynomial of degree <span class="math inline">\(3\)</span> and below, and hence its error can be estimated as <span class="math display">\[
+\left|\int_a^b(f(x)-p_3(x))\D x\right|\leq \frac{M_{4}}{4!}\int_a^b|\pi_{4}(x)|\D x;
+\]</span> the only problem here is that in <span class="math inline">\(\pi_4\)</span> I must have 4 points, but Simpson’s rule gives me only three: <span class="math inline">\(a,(a+b)/2,b\)</span>. Since I am free to choose the last point myself, I take it to make the error minimal; specifically, I will take <span class="math inline">\((a+b)/2\)</span> for the second time (strictly speaking, the error estimate from Section 13 was proved for distinct points; one can show that it remains valid if a point is repeated, which corresponds to the so-called Hermite interpolation), which means <span class="math display">\[
+\pi_4(x)=(x-a)\left(x-\frac{a+b}{2}\right)^2(x-b)\,.
+\]</span> Since <span class="math display">\[
+\int_a^b(x-a)\left(x-\frac{a+b}{2}\right)^2(b-x)\D x=(x=ht+(a+b)/2)=h^5 \int_{-1}^1(t+1)t^2(1-t)\D t=\frac{4h^5}{15}\,,
+\]</span> I finally get my estimate for the error in Simpson’s rule: <span class="math display">\[
+\left|\int_a^bf(x)\D x-w_0f_0-w_1f_1-w_2f_2\right|\leq \frac{h^5M_4}{90}\,,
+\]</span> i.e., the error is of order 5 with respect to the step <span class="math inline">\(h=(b-a)/2\)</span>.</p>
+<h2 id="sec14-3"><span class="secnum">14.3</span><span class="sectitle">The method of undetermined coefficients</span></h2>
+<p>Is there an easier way to find the approximate formulas? The answer is yes; let me show it by an example.</p>
+<div class="thm example style-definition" id="example-14-5"><p><span class="thm-head">Example 14.5 (Simpson’s rule again).</span> Let <span class="math inline">\([a,b]=[0,1]\)</span>, and I would like to find the weights to approximate the integral <span class="math display">\[
+\int_0^1f(x)\D x\approx w_0f_0+w_1f_1+w_2f_2.
+\]</span> In my case I have <span class="math inline">\(x_0=0,x_1=0.5,x_2=1\)</span>.</p>
+<p>Since I already know that my formula must be exact for any polynomial of degree <span class="math inline">\(2\)</span> and below, it must be exact for the specific examples <span class="math inline">\(1,x,x^2\)</span>. Certainly, I can also compute the integrals of these polynomials, getting <span class="math display">\begin{align*}
+  1 &amp; =\int_0^1 1\D x = w_0+w_1+w_2, \\
+  \frac{1}{2} &amp; =\int_0^1 x\D x=\frac 12 w_1+ w_2, \\
+  \frac 13 &amp;  = \int_0^1 x^2\D x=\frac 14 w_1+w_2,
+\end{align*}</span> which is a system of three linear equations with respect to three unknown weights. Solving it, I find <span class="math inline">\(w_0=w_2=\frac 16,\,w_1=\frac 23\)</span>, and hence <span class="math display">\[
+\int_0^1f(x)\D x \approx \frac 16\left(f_0+4f_1+f_2\right),
+\]</span> which is almost our general Simpson’s rule, because all the calculations were done for the specific interval <span class="math inline">\([0,1]\)</span>. Now I would like to change it to an arbitrary interval <span class="math inline">\([a,b]\)</span>. For this task consider a slightly more general problem: how to find a linear change of variables that maps the interval <span class="math inline">\([c,d]\)</span> (say, of variable <span class="math inline">\(t\)</span>) onto the interval <span class="math inline">\([a,b]\)</span> of variable <span class="math inline">\(x\)</span>? Since <span class="math display">\[
+x =\varphi(t)= At+ B,
+\]</span> and the ends of the interval must be mapped into the corresponding ends, I must have <span class="math display">\[
+b = A d+B,\quad a=Ac+B,
+\]</span> which gives me the solution <span class="math display">\[
+A =\frac{b-a}{d-c}\,,\quad B=\frac{ad-bc}{d-c}\,,
+\]</span> which allows me to generalize the result I obtained for the interval <span class="math inline">\([0,1]\)</span> to an arbitrary <span class="math inline">\([a,b]\)</span>. Namely, <span class="math display">\[
+\int_a^b f(x)\D x=(x=\varphi(t))=\frac{b-a}{d-c}\int_c^df(\varphi(t))\D t\approx\frac{b-a}{d-c}\sum_{i=0}^n w_i f(\varphi(t_i)),
+\]</span> where <span class="math inline">\(w_i\)</span> were already computed. In my case, <span class="math inline">\(c=0\)</span>, <span class="math inline">\(d=1\)</span>, and hence <span class="math display">\[
+\int_a^bf(x)\D x= (b-a)\int_0^1 f((b-a)t+a)\D t\approx(b-a)\bigl(w_0f(a)+w_1f((a+b)/2)+w_2f(b)\bigr),
+\]</span> and using the weights I found above I recover the general Simpson’s rule.</p>
+</div>
+<p>For larger <span class="math inline">\(n\)</span> I let the computer solve the system. The conditions that the formula with the points <span class="math inline">\(x_0,\ldots,x_n\)</span> on <span class="math inline">\([0,1]\)</span> is exact for <span class="math inline">\(1,x,\ldots,x^n\)</span> read <span class="math display">\[
+\sum_{j=0}^n w_jx_j^k=\int_0^1x^k\D x=\frac{1}{k+1}\,,\quad k=0,\ldots,n.
+\]</span> The matrix of this system has the elements <span class="math inline">\(x_j^k\)</span> in row <span class="math inline">\(k\)</span> and column <span class="math inline">\(j\)</span>; this is the transposed Vandermonde matrix from Section 13 (with the powers in the increasing order). In NumPy, <code>np.vander(x, increasing=True)</code> gives the Vandermonde matrix with the columns <span class="math inline">\(1,x,\ldots,x^n\)</span>, and <code>V.T</code> is the transpose of the matrix <code>V</code>.</p>
+<pre class="code script"><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">newton_cotes_weights</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the weights of the Newton-Cotes formula of degree n on [0, 1].&quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>            <span class="c1"># n + 1 equally spaced points</span>
+    <span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vander</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">increasing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>       <span class="c1"># V[j, k] = x_j^k</span>
+    <span class="n">moments</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>       <span class="c1"># the integrals of x^k, k = 0, ..., n</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">V</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">moments</span><span class="p">)</span>
+
+
+<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">newton_cotes_weights</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
+
+<span class="n">w</span> <span class="o">=</span> <span class="n">newton_cotes_weights</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;n = 8: the smallest weight is </span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></code></pre>
+<pre class="pyout"><code>1 [0.5 0.5]
+2 [0.16666667 0.66666667 0.16666667]
+3 [0.125 0.375 0.375 0.125]
+4 [0.07777778 0.35555556 0.13333333 0.35555556 0.07777778]
+n = 8: the smallest weight is -0.1601</code></pre>
+<p>For <span class="math inline">\(n=1\)</span> and <span class="math inline">\(n=2\)</span> I recover the trapezoidal rule and Simpson’s rule (with <span class="math inline">\(h=1\)</span> and <span class="math inline">\(h=1/2\)</span>, respectively), and for <span class="math inline">\(n=3\)</span> the formula of degree 3 above with <span class="math inline">\(h=1/3\)</span>. Note, however, that for <span class="math inline">\(n=8\)</span> some weights are negative. Negative weights are bad news: the formula then subtracts large terms from each other, and the rounding errors in the values <span class="math inline">\(f_j\)</span> get amplified. This is one more reason not to use Newton–Cotes formulas of high degree.</p>
+<p>Similarly to what I have done above, I can find Newton–Cotes formulas for any points, not necessarily equally spaced. For example, there are so-called <em>open</em> Newton–Cotes formulas of degree <span class="math inline">\(n\)</span> that use the step size <span class="math inline">\(h=(b-a)/(n+2)\)</span> and disregard the points <span class="math inline">\(x_0=a\)</span> and <span class="math inline">\(x_{n+2}=b\)</span>. For instance, for <span class="math inline">\(n=0\)</span> one recovers the familiar <em>midpoint</em> rule <span class="math display">\[
+\int_a^b f(x)\D x\approx (b-a)f((a+b)/2)\,.
+\]</span></p>
+<h2 id="sec14-4"><span class="secnum">14.4</span><span class="sectitle">Composite Newton–Cotes formulas</span></h2>
+<p>In the discussion above I used, as examples, only the formulas of degree 1 (trapezoidal rule) and 2 (Simpson’s rule). I only mentioned the formula of degree 3, and never discussed the formulas of degree 4 and above. The reason for this is that it is quite possible to get a large error by using Lagrange interpolation polynomials of high degree (recall the discussion of interpolating the function <span class="math inline">\(1/(1+x^2)\)</span> in Section 13; also recall the negative weights above). What is usually done in practice is not an increase of the degree, but division of the whole interval <span class="math inline">\([a,b]\)</span> into smaller intervals and using the formulas obtained above for each interval separately.</p>
+<div class="thm example style-definition" id="example-14-6"><p><span class="thm-head">Example 14.6 (Composite trapezoidal rule).</span> The goal is to compute, as before, <span class="math display">\[
+\int_a^b f(x)\D x.
+\]</span> Let <span class="math inline">\(N\)</span> be the number of intervals I divide <span class="math inline">\([a,b]\)</span> into; hence I have <span class="math inline">\(N+1\)</span> points in total, and the length of each interval is <span class="math display">\[
+h=\frac{b-a}{N}\,.
+\]</span> Now I apply the trapezoidal rule first on the interval <span class="math inline">\([x_0,x_1]\)</span>: <span class="math display">\[
+T_1=\frac{h}{2}(f_0+f_1),
+\]</span> then on the interval <span class="math inline">\([x_1,x_2]\)</span>: <span class="math display">\[
+T_2=\frac{h}{2}(f_1+f_2),
+\]</span> and so on, until I get to the final interval, <span class="math inline">\(T_N=\frac{h}{2}(f_{N-1}+f_N)\)</span>.</p>
+<p>Now I consider the sum <span class="math display">\[
+\int_a^b f(x)\D x\approx \sum_{j=1}^N T_j=h\left(\frac{f_0+f_N}{2}+f_1+\ldots+f_{N-1}\right)=T(N),
+\]</span> since each data point <span class="math inline">\(f_j\)</span> is present twice for all <span class="math inline">\(j\neq 0,N\)</span>. Since on each interval I make an error that does not exceed <span class="math inline">\(M_2h^3/12=M_2(b-a)^3/(12N^3)\)</span>, and there are <span class="math inline">\(N\)</span> intervals, my total error is <span class="math display">\[
+\left|\int_a^bf(x)\D x-T(N)\right|=\mathcal O \left(\frac{(b-a)^3M_2}{N^2}\right)=\mathcal O\left(\frac{1}{N^2}\right),
+\]</span> i.e., the composite trapezoidal rule has order <span class="math inline">\(2\)</span> with respect to <span class="math inline">\(h\)</span>.</p>
+</div>
+<div class="thm example style-definition" id="example-14-7"><p><span class="thm-head">Example 14.7 (Composite Simpson’s rule).</span> Similarly to the above, I can divide my interval <span class="math inline">\([a,b]\)</span> into <span class="math inline">\(N=2k\)</span> intervals (this is needed since Simpson’s rule is applied to pairs of adjacent intervals; for an odd number of intervals one can, e.g., use the formula of degree 3 on the last three intervals) and apply Simpson’s rule to pairs of adjacent intervals, i.e., <span class="math display">\[
+S_1=\frac{h}{3}(f_0+4 f_1+f_2),\quad S_2=\frac{h}{3}(f_2+4f_3+f_4),\quad \ldots,\quad S_{N/2}=\frac{h}{3}(f_{N-2}+4 f_{N-1}+f_N),
+\]</span> which, after some simplification, gives <span class="math display">\[
+\int_a^b f(x)\D x\approx S(N)=\frac{h}{3}(f_0+4f_1+2f_2+4f_3+2f_4+\ldots+4f_{N-1}+f_N).
+\]</span> Since for each pair of intervals the error has order 5, the total error for Simpson’s method can be estimated as <span class="math display">\[
+\left|\int_a^bf(x)\D x-S(N)\right|=\mathcal O \left(\frac{(b-a)^5M_4}{N^4}\right)=\mathcal O\left(\frac{1}{N^4}\right),
+\]</span> i.e., the composite Simpson’s rule has order <span class="math inline">\(4\)</span> with respect to <span class="math inline">\(h\)</span>; this is confirmed numerically in the next subsection.</p>
+</div>
+<p>The analysis above indicates that for a sufficiently smooth function <span class="math inline">\(f\)</span> composite formulas can be made as precise as required, provided that a sufficiently small step <span class="math inline">\(h\)</span> is chosen (but please remember the rounding errors, whose influence grows with <span class="math inline">\(N\)</span>, recall Section 10).</p>
+<h2 id="sec14:back"><span class="secnum">14.5</span><span class="sectitle">Back to Section 1</span></h2>
+<p>Now I can finally return to the problem from Section 1. Compare the leftpoint rule with the composite trapezoidal rule with the same <span class="math inline">\(n\)</span>: <span class="math display">\[
+L_n=h\bigl(f_0+f_1+\ldots+f_{n-1}\bigr),\quad T(n)=h\left(\frac{f_0+f_n}{2}+f_1+\ldots+f_{n-1}\right),
+\]</span> hence <span class="math display">\[
+T(n)=L_n+\frac{h}{2}\bigl(f(b)-f(a)\bigr).
+\]</span> The trapezoidal rule uses exactly the same values of <span class="math inline">\(f\)</span> (plus one), and differs from the leftpoint rule by a simple correction term. Since the error of <span class="math inline">\(T(n)\)</span> is <span class="math inline">\(\mathcal O(h^2)\)</span>, I get <span class="math display">\[
+L_n-\int_a^bf(x)\D x=-\frac{h}{2}\bigl(f(b)-f(a)\bigr)+\mathcal O(h^2),
+\]</span> and therefore, with <span class="math inline">\(h=(b-a)/n\)</span>, <span class="math display">\[
+n\left|L_n-\int_a^bf(x)\D x\right|\to \frac{(b-a)|f(b)-f(a)|}{2}\,,\quad n\to\infty.
+\]</span> For <span class="math inline">\(f(x)=e^{-x^2}\)</span> on <span class="math inline">\([0,1]\)</span> this limit is <span class="math inline">\((1-e^{-1})/2=0.31606\ldots\)</span>, which is exactly the number observed in Section 1.</p>
+<p>Similarly, I can find the limit of <span class="math inline">\(n^2\)</span> times the error of the composite trapezoidal rule. Adding up the exact errors <span class="math inline">\(\eqref{eq14:3}\)</span> on all the intervals, I get <span class="math display">\[
+T(n)-\int_a^bf(x)\D x=\frac{h^2}{12}\sum_{j=1}^n hf''(\eta_j)\approx\frac{h^2}{12}\int_a^bf''(x)\D x=\frac{h^2}{12}\bigl(f'(b)-f'(a)\bigr),
+\]</span> since the sum is a Riemann sum of <span class="math inline">\(f''\)</span>. For <span class="math inline">\(f(x)=e^{-x^2}\)</span> I have <span class="math inline">\(f'(x)=-2xe^{-x^2}\)</span>, and hence <span class="math inline">\(n^2\)</span> times the error of <span class="math inline">\(T(n)\)</span> should approach <span class="math inline">\(2e^{-1}/12=1/(6e)=0.06131\ldots\)</span> in absolute value.</p>
+<p>Let me check all this numerically. In Section 2 I wrote the function <code>leftpoint</code> with a loop and <code>math.exp</code>. With NumPy all three composite rules are written without loops: I compute all the points at once, evaluate <span class="math inline">\(f\)</span> at all of them at once (for this, <span class="math inline">\(f\)</span> must use <code>np.exp</code>, not <code>math.exp</code>), and sum. In <code>simpson</code>, the slice <code>y[1:-1:2]</code> contains the values <span class="math inline">\(f_1,f_3,\ldots,f_{N-1}\)</span>, which are multiplied by 4, and <code>y[2:-1:2]</code> contains <span class="math inline">\(f_2,f_4,\ldots,f_{N-2}\)</span>, which are multiplied by 2 (recall the slicing of lists in Section 2). The exact value of the integral is computed as in Section 1.</p>
+<pre class="code script"><code><span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">leftpoint</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The leftpoint rule with n intervals (Sections 1 and 2).&quot;&quot;&quot;</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">h</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>            <span class="c1"># the points x_0, ..., x_{n-1}</span>
+    <span class="k">return</span> <span class="n">h</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">trapezoid</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The composite trapezoidal rule with n intervals.&quot;&quot;&quot;</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>        <span class="c1"># the points x_0, ..., x_n</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">h</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">y</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">simpson</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The composite Simpson&#39;s rule with n intervals; n must be even.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The number of intervals must be even.&quot;</span><span class="p">)</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">h</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="mi">2</span><span class="p">])</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="mi">2</span><span class="p">])</span> <span class="o">+</span> <span class="n">y</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+
+<span class="n">I</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">erf</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>       <span class="c1"># the exact value of the integral</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;    n   leftpoint   n*error   trapezoid   n^2*error    Simpson&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">1000</span><span class="p">]:</span>
+    <span class="n">error_L</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">leftpoint</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="o">-</span> <span class="n">I</span><span class="p">)</span>
+    <span class="n">error_T</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">trapezoid</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="o">-</span> <span class="n">I</span><span class="p">)</span>
+    <span class="n">error_S</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">simpson</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="o">-</span> <span class="n">I</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">n</span><span class="si">:</span><span class="s2">5d</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">error_L</span><span class="si">:</span><span class="s2">10.2e</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">n</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">error_L</span><span class="si">:</span><span class="s2">8.5f</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">error_T</span><span class="si">:</span><span class="s2">10.2e</span><span class="si">}</span><span class="s2">  &quot;</span>
+          <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">n</span><span class="o">**</span><span class="mi">2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">error_T</span><span class="si">:</span><span class="s2">10.5f</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">error_S</span><span class="si">:</span><span class="s2">9.2e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></code></pre>
+<pre class="pyout"><code>    n   leftpoint   n*error   trapezoid   n^2*error    Simpson
+   10    3.10e-02   0.30993    6.13e-04     0.06133   8.15e-07
+  100    3.15e-03   0.31545    6.13e-06     0.06131   8.17e-11
+ 1000    3.16e-04   0.31600    6.13e-08     0.06131   8.10e-15</code></pre>
+<p>(Two strings written next to each other, as in the last <code>print</code>, are glued together; this is a convenient way to split a long line.) Both limits are confirmed. Note how much better the trapezoidal rule is than the leftpoint rule, although it uses the same values of <span class="math inline">\(f\)</span>. Simpson’s rule is better still: its error decreases by the factor <span class="math inline">\(10^4\)</span> when <span class="math inline">\(n\)</span> is multiplied by <span class="math inline">\(10\)</span>, as predicted, and for <span class="math inline">\(n=1000\)</span> it is already close to the size of the rounding errors (the integral is about <span class="math inline">\(0.75\)</span>, and the distance between neighboring <code>float</code> numbers near it is about <span class="math inline">\(10^{-16}\)</span>, recall Section 10), so there is no point in increasing <span class="math inline">\(n\)</span> further.</p>
+<h2 id="sec14-6"><span class="secnum">14.6</span><span class="sectitle">Implementation</span></h2>
+<p>For my next test function I will take the very simple <span class="math display">\[
+f(x)=e^x
+\]</span> on the interval <span class="math inline">\([0,1]\)</span>, for which <span class="math display">\[
+\int_0^1e^x\D x=e-1\approx 1.718281828459045.
+\]</span> In the previous subsection I wrote the composite rules in vectorized form. To see what this gives, let me also write the composite trapezoidal rule straightforwardly, with a loop, as I would have done with lists, and compare the two for a large number of intervals (as in Section 9).</p>
+<pre class="code script"><code><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">trapezoid_loop</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The composite trapezoidal rule with n intervals, with a loop over the points.&quot;&quot;&quot;</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">+</span> <span class="n">f</span><span class="p">(</span><span class="n">b</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="n">total</span> <span class="o">+=</span> <span class="n">f</span><span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="n">j</span> <span class="o">*</span> <span class="n">h</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">h</span> <span class="o">*</span> <span class="n">total</span>
+
+
+<span class="n">exact</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">e</span> <span class="o">-</span> <span class="mi">1</span>
+<span class="n">n</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="mi">6</span>
+<span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="p">[</span><span class="n">trapezoid_loop</span><span class="p">,</span> <span class="n">trapezoid</span><span class="p">]:</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">rule</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rule</span><span class="o">.</span><span class="vm">__name__</span><span class="si">:</span><span class="s2">&gt;14</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.15f</span><span class="si">}</span><span class="s2">, error </span><span class="si">{</span><span class="nb">abs</span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">exact</span><span class="p">)</span><span class="si">:</span><span class="s2">.1e</span><span class="si">}</span><span class="s2">, &quot;</span>
+          <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span></code></pre>
+<pre class="pyout"><code>trapezoid_loop: 1.718281828459131, error 8.6e-14, 0.2060 seconds
+     trapezoid: 1.718281828459188, error 1.4e-13, 0.0078 seconds</code></pre>
+<p>The results differ only in the last digits: the error of the method for <span class="math inline">\(n=10^6\)</span> is <span class="math inline">\(\frac{h^2}{12}(e-1)\approx 1.4\cdot 10^{-13}\)</span> (Section <a href="#sec14:back">14.5</a>), and the rounding errors in the sum of <span class="math inline">\(10^6\)</span> terms, which is computed in a different order in the two functions, are of comparable size. The vectorized version is more than ten times faster. The composite trapezoidal rule is also available in NumPy as <code>np.trapezoid(y, dx=h)</code>, where <code>y</code> is the array of the values <span class="math inline">\(f_0,\ldots,f_N\)</span> (in older versions of NumPy it was called <code>np.trapz</code>, which does not exist anymore).</p>
+<p>Both functions, however, have a major drawback: they require the number of intervals as an input parameter. How do I know which <span class="math inline">\(n\)</span> to submit? I do have some theoretical estimates, but they are usually difficult to apply in concrete cases; moreover, they give very conservative estimates of the error, and my goal is to minimize the number of evaluations of my function. The basic idea, of course, is to compute my integral for two different <span class="math inline">\(n\)</span>, and if the results are sufficiently close to each other, stop the computations. Here is how it can be done rather efficiently.</p>
+<p>Let me consider a sequence of approximations for the same interval <span class="math inline">\([a,b]\)</span>, which I will index by the variable <span class="math inline">\(K\)</span>, such that at the <span class="math inline">\(K\)</span>-th step I have <span class="math inline">\(N=2^{K-1}\)</span> intervals. For <span class="math inline">\(K=1\)</span> I have one interval, and my approximation is <span class="math display">\[
+T(1)=h_1\frac{f(a)+f(b)}{2}\,,\quad h_1={b-a}.
+\]</span> For <span class="math inline">\(K=2\)</span> I have 2 intervals, <span class="math inline">\(h_2=(b-a)/2\)</span>, and <span class="math display">\[
+T(2)=h_2\left(\frac{f(a)+f(b)}{2}+f((a+b)/2)\right)=\frac{T(1)}{2}+h_2f((a+b)/2).
+\]</span> One more step, <span class="math inline">\(K=3\)</span>, <span class="math inline">\(N=4\)</span>, <span class="math inline">\(h_3=(b-a)/4\)</span>: <span class="math display">\[
+T(3)=h_3\left(\frac{f_0+f_4}{2}+f_2+f_1+f_3\right)=\frac{T(2)}{2}+h_3(f_1+f_3).
+\]</span> (In this notation, <span class="math inline">\(T(K)\)</span> is the composite trapezoidal rule with <span class="math inline">\(2^{K-1}\)</span> intervals.) Now the idea should be clear: at each next step, to compute <span class="math inline">\(T(K)\)</span> I can use the precomputed value <span class="math inline">\(T(K-1)\)</span> and the values of the function <span class="math inline">\(f\)</span> at the “newly added” points <span class="math inline">\(x_j=a+jh_K\)</span> with odd <span class="math inline">\(j\)</span>, whose number is exactly <span class="math inline">\(2^{K-2}\)</span>. This will allow me to save a lot of time by reusing the results of previous computations. Here is my function that returns <span class="math inline">\(T(K)\)</span> as an improvement of the previous value <span class="math inline">\(T(K-1)\)</span>, and the function that doubles the number of intervals until two successive approximations are sufficiently close.</p>
+<pre class="code script"><code><span class="k">def</span><span class="w"> </span><span class="nf">trapezoid_refine</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">T_old</span><span class="p">,</span> <span class="n">K</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return T(K), the trapezoidal rule with 2**(K - 1) intervals,</span>
+<span class="sd">    given T_old = T(K - 1).&quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">**</span> <span class="p">(</span><span class="n">K</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>                    <span class="c1"># the number of intervals</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span>                     <span class="c1"># the step</span>
+    <span class="n">x_new</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">h</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># the new points x_j = a + j h with odd j</span>
+    <span class="k">return</span> <span class="n">T_old</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">h</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">x_new</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">trapezoid_tol</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> <span class="n">min_iterations</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">max_iterations</span><span class="o">=</span><span class="mi">25</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Approximate the integral of f over [a, b] by the composite trapezoidal rule.</span>
+
+<span class="sd">    The number of intervals is doubled until the relative difference of two</span>
+<span class="sd">    successive approximations does not exceed tol, but at least min_iterations</span>
+<span class="sd">    approximations are computed. If this does not happen after max_iterations</span>
+<span class="sd">    approximations (2**(max_iterations - 1) intervals), an error is raised.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">+</span> <span class="n">f</span><span class="p">(</span><span class="n">b</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span>     <span class="c1"># T(1)</span>
+    <span class="k">for</span> <span class="n">K</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">max_iterations</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">T_new</span> <span class="o">=</span> <span class="n">trapezoid_refine</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">K</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">K</span> <span class="o">&gt;=</span> <span class="n">min_iterations</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">T_new</span> <span class="o">-</span> <span class="n">T</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">tol</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">T_new</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">T_new</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">T_new</span>
+
+    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No convergence; the last approximation is </span><span class="si">{</span><span class="n">T</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+
+<span class="k">for</span> <span class="n">tol</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">1e-8</span><span class="p">,</span> <span class="mf">1e-11</span><span class="p">]:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">trapezoid_tol</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">tol</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tol = </span><span class="si">{</span><span class="n">tol</span><span class="si">:</span><span class="s2">.0e</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.15f</span><span class="si">}</span><span class="s2">, error </span><span class="si">{</span><span class="nb">abs</span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">exact</span><span class="p">)</span><span class="si">:</span><span class="s2">.1e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></code></pre>
+<pre class="pyout"><code>tol = 1e-08: 1.718281830592745, error 2.1e-09
+tol = 1e-11: 1.718281828461129, error 2.1e-12</code></pre>
+<p>Two details of the stopping condition deserve a comment. First, I use <code>&lt;=</code> and not <code>&lt;</code>: if the integral is zero (e.g., for an odd function on <span class="math inline">\([-1,1]\)</span>), all the approximations may be exactly zero, and the condition <code>0 &lt; tol * 0</code> would never be satisfied. Second, I do not stop before <code>min_iterations</code> approximations are computed. The reason is that the first approximations use only a few values of <span class="math inline">\(f\)</span>, and two of them can be close by pure chance. For example, for <span class="math inline">\(f(x)=1+\sin^2 2\pi x\)</span> on <span class="math inline">\([0,1]\)</span> I have <span class="math inline">\(T(1)=T(2)=1\)</span>, since <span class="math inline">\(\sin 2\pi x=0\)</span> at <span class="math inline">\(x=0,\frac 12,1\)</span>, whereas the integral is <span class="math inline">\(1.5\)</span>; without the minimal number of iterations the function would stop immediately with the answer <span class="math inline">\(1\)</span>. No stopping rule that uses only finitely many values of <span class="math inline">\(f\)</span> can be completely reliable (see Exercise <a href="#exer:14:fool">14.6</a>), but this one is reasonable for not too complicated functions.</p>
+<p>Can I do better? Actually, there are quite deep theoretical reasons that show how a more efficient code can be written. The truth is that when one approximates an integral with the composite trapezoidal rule, the actual error has the following representation: <span class="math display">\[
+\int_a^b f(x)\D x =T(N)+c_1h^2+c_2h^4+c_3h^6+\ldots;
+\]</span> note the absence of odd powers of <span class="math inline">\(h\)</span>. (I found the first coefficient in Section <a href="#sec14:back">14.5</a>: <span class="math inline">\(c_1=-(f'(b)-f'(a))/12\)</span>.) Similarly, one has <span class="math display">\[
+\int_a^b f(x)\D x= T(N/2)+c_1(2h)^2+c_2(2h)^4+c_3(2h)^6+\ldots,
+\]</span> because halving the number of intervals doubles the step. Denoting the exact value of the integral by <span class="math inline">\(I\)</span>, I get <span class="math display">\[
+I=\frac{4T(N)-T(N/2)}{3}+\tilde{c}_2h^4+\ldots,
+\]</span> that is, the formula <span class="math display">\[
+I\approx\frac{4T(N)-T(N/2)}{3}
+\]</span> has order four (in fact, it is exactly the composite Simpson’s rule <span class="math inline">\(S(N)\)</span>, see Exercise <a href="#exer:14:richardson">14.2</a>), and it uses the trapezoidal rule with the number of intervals doubled at each step, exactly as in my code above. Hence I can write a new function that takes advantage of this.</p>
+<pre class="code script"><code><span class="k">def</span><span class="w"> </span><span class="nf">simpson_tol</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> <span class="n">min_iterations</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">max_iterations</span><span class="o">=</span><span class="mi">25</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Approximate the integral of f over [a, b] by the composite Simpson&#39;s rule</span>
+<span class="sd">    S(N) = (4 T(N) - T(N/2)) / 3, doubling N as in trapezoid_tol.&quot;&quot;&quot;</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">+</span> <span class="n">f</span><span class="p">(</span><span class="n">b</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span>     <span class="c1"># T(1)</span>
+    <span class="n">S</span> <span class="o">=</span> <span class="n">T</span>                               <span class="c1"># not used before S(2) is computed</span>
+    <span class="k">for</span> <span class="n">K</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">max_iterations</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">T_new</span> <span class="o">=</span> <span class="n">trapezoid_refine</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">K</span><span class="p">)</span>
+        <span class="n">S_new</span> <span class="o">=</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">T_new</span> <span class="o">-</span> <span class="n">T</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
+        <span class="k">if</span> <span class="n">K</span> <span class="o">&gt;=</span> <span class="n">min_iterations</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">S_new</span> <span class="o">-</span> <span class="n">S</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">tol</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">S_new</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">S_new</span>
+        <span class="n">T</span><span class="p">,</span> <span class="n">S</span> <span class="o">=</span> <span class="n">T_new</span><span class="p">,</span> <span class="n">S_new</span>
+
+    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No convergence; the last approximation is </span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+
+<span class="k">for</span> <span class="n">tol</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">1e-8</span><span class="p">,</span> <span class="mf">1e-11</span><span class="p">]:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">simpson_tol</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">tol</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tol = </span><span class="si">{</span><span class="n">tol</span><span class="si">:</span><span class="s2">.0e</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.15f</span><span class="si">}</span><span class="s2">, error </span><span class="si">{</span><span class="nb">abs</span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">exact</span><span class="p">)</span><span class="si">:</span><span class="s2">.1e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></code></pre>
+<pre class="pyout"><code>tol = 1e-08: 1.718281829028015, error 5.7e-10
+tol = 1e-11: 1.718281828459184, error 1.4e-13</code></pre>
+<p>The function <code>simpson_tol</code> requires far fewer evaluations of <span class="math inline">\(f\)</span> than <code>trapezoid_tol</code>: for my example, with <code>tol=1e-8</code> it uses <span class="math inline">\(65\)</span> values of <span class="math inline">\(f\)</span> instead of <span class="math inline">\(8193\)</span>, and with <code>tol=1e-11</code> it uses <span class="math inline">\(513\)</span> values instead of <span class="math inline">\(262145\)</span>, and its results are more accurate. The same idea can be applied again to the values <span class="math inline">\(S(N)\)</span>, which gives a formula of order 6, and so on; this is called the <em>Romberg method</em>.</p>
+<h2 id="sec14-7"><span class="secnum">14.7</span><span class="sectitle">Exercises</span></h2>
+<div class="thm exercise style-definition" id="exer:14:38"><p><span class="thm-head">Exercise 14.1.</span> Find the weights <span class="math inline">\(w_1,w_2\)</span> of Simpson’s rule by direct integration. Derive the Newton–Cotes formula of degree 3 by the method of undetermined coefficients, and check your answer with <code>newton_cotes_weights(3)</code>.</p>
+</div>
+<div class="thm exercise style-definition" id="exer:14:richardson"><p><span class="thm-head">Exercise 14.2.</span> Prove that <span class="math inline">\(\bigl(4T(N)-T(N/2)\bigr)/3=S(N)\)</span> for even <span class="math inline">\(N\)</span>, and check it numerically with the functions <code>trapezoid</code> and <code>simpson</code>.</p>
+</div>
+<div class="thm exercise style-definition" id="exercise-14-3"><p><span class="thm-head">Exercise 14.3.</span> Write a vectorized function <code>midpoint(f, a, b, n)</code> for the composite midpoint rule <span class="math inline">\(M(n)\)</span>, which applies the midpoint rule on each of <span class="math inline">\(n\)</span> intervals. Compute <span class="math inline">\(n^2\)</span> times its error for <span class="math inline">\(\int_0^1e^{-x^2}\D x\)</span>, and compare with the trapezoidal rule. Guess a formula for the limit similar to the one in Section <a href="#sec14:back">14.5</a>. Show that <span class="math inline">\(\bigl(T(n)+2M(n)\bigr)/3=S(2n)\)</span>.</p>
+</div>
+<div class="thm exercise style-definition" id="exercise-14-4"><p><span class="thm-head">Exercise 14.4.</span> Write a function that implements the composite Simpson’s rule for any number of intervals <span class="math inline">\(N\geq 3\)</span>, using the formula of degree 3 on the last three intervals if <span class="math inline">\(N\)</span> is odd. Check that its error is of order 4.</p>
+</div>
+<div class="thm exercise style-definition" id="exercise-14-5"><p><span class="thm-head">Exercise 14.5.</span> Compute the sum of the absolute values of the Newton–Cotes weights, <span class="math inline">\(\sum_j|w_j|\)</span>, for <span class="math inline">\(n=1,\ldots,12\)</span>. Explain why a large value of this sum is bad if the values <span class="math inline">\(f_j\)</span> contain errors (e.g., rounding errors). (<em>Hint:</em> what is <span class="math inline">\(\sum_j w_j\)</span>?)</p>
+</div>
+<div class="thm exercise style-definition" id="exer:14:fool"><p><span class="thm-head">Exercise 14.6.</span> Show that <code>trapezoid_tol</code> and <code>simpson_tol</code> return the value <span class="math inline">\(1\)</span> for <span class="math inline">\(f(x)=1+\sin^2(16\pi x)\)</span> on <span class="math inline">\([0,1]\)</span>, whereas the integral is <span class="math inline">\(1.5\)</span>. Explain this (note that the answer does not change if <code>tol</code> is very small). Why does <code>min_iterations=6</code> help for this function? How would you construct a function that fools <code>trapezoid_tol</code> for any given <code>min_iterations</code>?</p>
+</div>
+</article>
+<nav class="pager" aria-label="More sections"><a class="prev" href="13.html"><span class="dir">Previous</span><span class="pt"><span class="pnum">13</span> Polynomial interpolation</span></a><a class="next" href="15.html"><span class="dir">Next</span><span class="pt"><span class="pnum">15</span> Gaussian quadratures</span></a></nav>
+</main>
+</div>
+<a class="to-top" href="#" aria-label="Back to top">&uarr;</a>
+</body>
+</html>

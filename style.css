@@ -249,7 +249,7 @@ figcaption { font-size: .9rem; color: var(--muted); font-style: italic; max-widt
 mjx-container.wide { display: inline-block; max-width: 100%; overflow-x: auto; overflow-y: hidden; vertical-align: middle; }
 
 /* ---------- figures with several images ---------- */
-.fig-row { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: .8rem 3%; }
+.fig-row { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: .8rem 1.5%; }
 .fig-row + .fig-row { margin-top: .8rem; }
 .fig-cell { width: var(--w, 60%); min-width: min(100%, 300px); max-width: 100%; }
 .notes .fig-cell img { width: 100%; min-width: 0; }
