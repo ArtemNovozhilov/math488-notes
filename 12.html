@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Section 12: Systems with tridiagonal matrices</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,500;1,400;1,500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="style.css">
+<script>
+window.MathJax = {
+  loader: {load: ['[tex]/tagformat']},
+  tex: {
+    packages: {'[+]': ['tagformat']},
+    tags: 'ams',
+    tagformat: {number: (n) => '12.' + n},
+    macros: {
+      D: '\\mathrm{d}',
+      Div: '\\operatorname{div}',
+      E: ['\\expectation\\left(#1\\right)', 1],
+      I: '\\mathrm{i}',
+      Im: '\\mathop{\\mathrm{Im}}\\nolimits',
+      Ind: ['\\,\\mathbf{1}_{#1}', 1],
+      Int: '\\operatorname{int}',
+      N: '\\mathbf{N}',
+      Poi: ['\\poisson\\left(#1\\right)', 1],
+      Pr: ['\\probability\\left\\{#1\\right\\}', 1],
+      R: '\\mathbf{R}',
+      Re: '\\mathop{\\mathrm{Re}}\\nolimits',
+      Tr: '\\operatorname{tr}',
+      V: ['{\\mathbf{#1}}', 1],
+      Var: ['\\,\\mathrm{Var}\\left(#1\\right)', 1],
+      arctanh: '\\operatorname{arctanh}',
+      bd: '\\operatorname{bd}',
+      bs: ['{\\boldsymbol{#1}}', 1],
+      code: ['\\texttt{#1}', 1],
+      curl: '\\operatorname{curl}',
+      diag: '\\operatorname{diag}',
+      diam: '\\operatorname{diam}',
+      erf: '\\operatorname{erf}',
+      expectation: '\\operatorname{E}',
+      grad: '\\operatorname{grad}',
+      labelitemi: '$\\bullet$',
+      overbar: ['\\mkern 3.5mu\\overline{\\mkern-2mu#1\\mkern-3mu}\\mkern 3.5mu', 1],
+      pdt: '\\partial_t',
+      poisson: '\\operatorname{Poisson}',
+      probability: '\\operatorname{P}',
+      rank: '\\operatorname{rank}',
+      sign: '\\operatorname{sgn}'
+    }
+  }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<script defer src="notes.js"></script>
+</head>
+<body>
+<div class="progress" aria-hidden="true"><span></span></div>
+<header class="topbar">
+  <a class="course-name" href="index.html">Math 488/688: Numerical Analysis</a>
+  <a class="all-sections" href="index.html">All sections</a>
+</header>
+<div class="layout">
+<aside class="sidetoc" aria-label="On this page">
+  <p class="sidetoc-title">Section 12</p>
+  <ol>
+<li><a href="#sec12-1"><span class="tnum">12.1</span><span class="ttl">Motivation</span></a></li>
+<li><a href="#sec12-2"><span class="tnum">12.2</span><span class="ttl">The <span class="math inline">\(\bs{LU}\)</span> factorization of a tridiagonal matrix</span></a></li>
+<li><a href="#sec12-3"><span class="tnum">12.3</span><span class="ttl">The number of operations</span></a></li>
+<li><a href="#sec12-4"><span class="tnum">12.4</span><span class="ttl">Diagonal dominance: no pivoting is necessary</span></a></li>
+<li><a href="#sec12-5"><span class="tnum">12.5</span><span class="ttl">Python code</span></a></li>
+<li><a href="#sec12-6"><span class="tnum">12.6</span><span class="ttl">Exercises</span></a></li>
+  </ol>
+</aside>
+<main>
+<header class="hero">
+  <span class="bignum" aria-hidden="true">12</span>
+  <div class="hero-text">
+    <p class="kicker">Section</p>
+    <h1>Systems with tridiagonal matrices</h1>
+    <p class="byline">Math 488/688: Numerical Analysis<br>e-mail: <a href="mailto:artem.novozhilov@ndsu.edu">artem.novozhilov@ndsu.edu</a>. Fall 2026</p>
+  </div>
+  <svg class="emblem" viewBox="0 0 160 160" aria-hidden="true">
+<line x1="8" y1="112" x2="156" y2="112"/>
+<polyline class="curve" points="20.0,156.0 21.2,156.0 22.4,156.0 23.6,155.9 24.8,155.9 26.0,155.8 27.2,155.7 28.4,155.6 29.6,155.4 30.8,155.3 32.0,155.1 33.2,154.9 34.4,154.7 35.6,154.5 36.8,154.3 38.0,154.0 39.2,153.7 40.4,153.5 41.6,153.1 42.8,152.8 44.0,152.5 45.2,152.1 46.4,151.7 47.6,151.3 48.8,150.9 50.0,150.5 51.2,150.1 52.4,149.6 53.6,149.1 54.8,148.6 56.0,148.1 57.2,147.5 58.4,147.0 59.6,146.4 60.8,145.8 62.0,145.2 63.2,144.6 64.4,144.0 65.6,143.3 66.8,142.6 68.0,141.9 69.2,141.2 70.4,140.5 71.6,139.7 72.8,139.0 74.0,138.2 75.2,137.4 76.4,136.6 77.6,135.7 78.8,134.9 80.0,134.0 81.2,133.1 82.4,132.2 83.6,131.3 84.8,130.3 86.0,129.4 87.2,128.4 88.4,127.4 89.6,126.4 90.8,125.4 92.0,124.3 93.2,123.3 94.4,122.2 95.6,121.1 96.8,120.0 98.0,118.8 99.2,117.7 100.4,116.5 101.6,115.3 102.8,114.1 104.0,112.9 105.2,111.6 106.4,110.4 107.6,109.1 108.8,107.8 110.0,106.5 111.2,105.2 112.4,103.8 113.6,102.5 114.8,101.1 116.0,99.7 117.2,98.3 118.4,96.8 119.6,95.4 120.8,93.9 122.0,92.4 123.2,90.9 124.4,89.4 125.6,87.9 126.8,86.3 128.0,84.7 129.2,83.1 130.4,81.5 131.6,79.9 132.8,78.2 134.0,76.6 135.2,74.9 136.4,73.2 137.6,71.5 138.8,69.8 140.0,68.0 141.2,66.2 142.4,64.4 143.6,62.6 144.8,60.8 146.0,59.0 147.2,57.1 148.4,55.2 149.6,53.4 150.8,51.4 152.0,49.5"/>
+<line class="dash" x1="140" y1="112" x2="140" y2="68"/>
+<line class="ray" x1="101.0" y1="125.2" x2="152.0" y2="50.4"/>
+<circle class="pt" cx="140" cy="68" r="3.5"/><circle class="pt" cx="110" cy="112" r="3"/>
+<text x="134" y="132">x₀</text><text x="92" y="132">x₁</text>
+</svg>
+</header>
+<nav class="toc" aria-label="Contents">
+  <p class="toc-title">In this section</p>
+  <ol>
+<li><a href="#sec12-1"><span class="tnum">12.1</span><span class="ttl">Motivation</span></a></li>
+<li><a href="#sec12-2"><span class="tnum">12.2</span><span class="ttl">The <span class="math inline">\(\bs{LU}\)</span> factorization of a tridiagonal matrix</span></a></li>
+<li><a href="#sec12-3"><span class="tnum">12.3</span><span class="ttl">The number of operations</span></a></li>
+<li><a href="#sec12-4"><span class="tnum">12.4</span><span class="ttl">Diagonal dominance: no pivoting is necessary</span></a></li>
+<li><a href="#sec12-5"><span class="tnum">12.5</span><span class="ttl">Python code</span></a></li>
+<li><a href="#sec12-6"><span class="tnum">12.6</span><span class="ttl">Exercises</span></a></li>
+  </ol>
+</nav>
+<article class="notes">
+<h2 id="sec12-1"><span class="secnum">12.1</span><span class="sectitle">Motivation</span></h2>
+<p>In Sections 7–9 I solved systems <span class="math inline">\(\bs{Ax}=\bs b\)</span> with a general <span class="math inline">\(n\times n\)</span> matrix <span class="math inline">\(\bs A\)</span>, and in Section 8 I showed that Gaussian elimination (equivalently, the <span class="math inline">\(\bs{LU}\)</span> factorization) requires approximately <span class="math inline">\(2n^3/3\)</span> elementary operations. In many applications, however, the matrix <span class="math inline">\(\bs A\)</span> has a very special structure, and most of its elements are zero. The simplest and one of the most important examples is a <em>tridiagonal</em> matrix, whose nonzero elements can only be on the main diagonal and on the two diagonals next to it: <span class="math display">\begin{equation}\label{eq12:1}
+\bs A=\begin{bmatrix}
+d_1 &amp; c_1 &amp; &amp; &amp; \\
+a_2 &amp; d_2 &amp; c_2 &amp; &amp; \\
+ &amp; \ddots &amp; \ddots &amp; \ddots &amp; \\
+ &amp; &amp; a_{n-1} &amp; d_{n-1} &amp; c_{n-1}\\
+ &amp; &amp; &amp; a_n &amp; d_n
+\end{bmatrix},
+\end{equation}</span> i.e., <span class="math inline">\(a_{ij}=0\)</span> if <span class="math inline">\(|i-j|&gt;1\)</span> (the empty places are zeros). I denote the elements below the main diagonal by <span class="math inline">\(a_i\)</span>, the diagonal elements by <span class="math inline">\(d_i\)</span>, and the elements above the main diagonal by <span class="math inline">\(c_i\)</span>, so that row <span class="math inline">\(i\)</span> of <span class="math inline">\(\bs A\)</span> contains <span class="math inline">\(a_i,d_i,c_i\)</span>; it is convenient to set <span class="math inline">\(a_1=c_n=0\)</span>. Such matrices appear, e.g., when one approximates the derivatives of an unknown function by finite differences (recall Section 10), and I will need them in Section 16 to construct the cubic splines.</p>
+<p>A tridiagonal matrix is described by about <span class="math inline">\(3n\)</span> numbers instead of <span class="math inline">\(n^2\)</span>, and the question is whether this can be used to solve the system faster. The answer is a resounding yes: the number of operations drops from <span class="math inline">\(2n^3/3\)</span> to about <span class="math inline">\(8n\)</span>.</p>
+<h2 id="sec12-2"><span class="secnum">12.2</span><span class="sectitle">The <span class="math inline">\(\bs{LU}\)</span> factorization of a tridiagonal matrix</span></h2>
+<p>Recall the formulas of the <span class="math inline">\(\bs{LU}\)</span> factorization from Section 9, where <span class="math inline">\(\bs L\)</span> is unit lower triangular and <span class="math inline">\(\bs U\)</span> is upper triangular: <span class="math display">\begin{equation}\label{eq12:2}
+u_{ij}=a_{ij}-\sum_{k=1}^{i-1}l_{ik}u_{kj},\quad i\leq j,\qquad l_{ij}=\frac{1}{u_{jj}}\left(a_{ij}-\sum_{k=1}^{j-1}l_{ik}u_{kj}\right),\quad i&gt;j
+\end{equation}</span> (in Section 9 the expression in the parentheses was denoted <span class="math inline">\(v_{ij}\)</span>; recall also that <span class="math inline">\(l_{ij}\)</span> are exactly the multipliers of Gaussian elimination from Section 7). Let me see what these formulas give for the matrix <span class="math inline">\(\eqref{eq12:1}\)</span>.</p>
+<div class="thm proposition style-plain" id="pr12:1"><p><span class="thm-head">Proposition 12.1.</span> Let <span class="math inline">\(\bs A\)</span> be the tridiagonal matrix <span class="math inline">\(\eqref{eq12:1}\)</span>, and assume that its <span class="math inline">\(\bs{LU}\)</span> factorization exists (i.e., formulas <span class="math inline">\(\eqref{eq12:2}\)</span> never require a division by zero). Then <span class="math display">\[
+\bs L=\begin{bmatrix}
+1 &amp; &amp; &amp; \\
+l_2 &amp; 1 &amp; &amp; \\
+ &amp; \ddots &amp; \ddots &amp; \\
+ &amp; &amp; l_n &amp; 1
+\end{bmatrix},\quad
+\bs U=\begin{bmatrix}
+u_1 &amp; c_1 &amp; &amp; \\
+ &amp; u_2 &amp; \ddots &amp; \\
+ &amp; &amp; \ddots &amp; c_{n-1}\\
+ &amp; &amp; &amp; u_n
+\end{bmatrix},
+\]</span> where <span class="math display">\begin{equation}\label{eq12:3}
+u_1=d_1,\qquad l_i=\frac{a_i}{u_{i-1}}\,,\quad u_i=d_i-l_ic_{i-1},\quad i=2,\ldots,n.
+\end{equation}</span> That is, <span class="math inline">\(\bs L\)</span> has nonzero elements only on the main diagonal and right below it, <span class="math inline">\(\bs U\)</span> only on the main diagonal and right above it, and the elements above the main diagonal of <span class="math inline">\(\bs U\)</span> are the same as in <span class="math inline">\(\bs A\)</span>.</p>
+</div>
+<div class="proof"><p><span class="thm-head">Proof.</span> I use induction over the rows, computing in each row <span class="math inline">\(i\)</span> first the elements <span class="math inline">\(l_{ij}\)</span>, <span class="math inline">\(j&lt;i\)</span>, and then <span class="math inline">\(u_{ij}\)</span>, <span class="math inline">\(j\geq i\)</span> (formulas <span class="math inline">\(\eqref{eq12:2}\)</span> use only the elements computed before). Row 1 of <span class="math inline">\(\bs U\)</span> is row 1 of <span class="math inline">\(\bs A\)</span> (the sum in <span class="math inline">\(\eqref{eq12:2}\)</span> is empty), i.e., <span class="math inline">\(u_{11}=d_1\)</span>, <span class="math inline">\(u_{12}=c_1\)</span>, and <span class="math inline">\(u_{1j}=0\)</span> for <span class="math inline">\(j&gt;2\)</span>. Assume that the statement is proved for the rows <span class="math inline">\(1,\ldots,i-1\)</span>, and consider row <span class="math inline">\(i\)</span>. By the induction assumption, <span class="math inline">\(l_{ik}\)</span> with <span class="math inline">\(k&lt;i-1\)</span> are computed by the same formulas as below, so let me go from left to right. For <span class="math inline">\(j&lt;i-1\)</span> the sum in the formula for <span class="math inline">\(l_{ij}\)</span> contains only <span class="math inline">\(l_{ik}\)</span> with <span class="math inline">\(k&lt;j\)</span>, which are already shown to be zero, and <span class="math inline">\(a_{ij}=0\)</span>; hence <span class="math inline">\(l_{ij}=0\)</span>. For <span class="math inline">\(j=i-1\)</span> the sum again contains only zero terms, hence <span class="math inline">\(l_{i,i-1}=a_i/u_{i-1,i-1}\)</span>. In the formula for <span class="math inline">\(u_{ij}\)</span>, <span class="math inline">\(j\geq i\)</span>, the only term of the sum that can be nonzero is <span class="math inline">\(l_{i,i-1}u_{i-1,j}\)</span>, and by the induction assumption <span class="math inline">\(u_{i-1,i}=c_{i-1}\)</span> and <span class="math inline">\(u_{i-1,j}=0\)</span> for <span class="math inline">\(j&gt;i\)</span>. Therefore <span class="math inline">\(u_{ii}=d_i-l_ic_{i-1}\)</span>, <span class="math inline">\(u_{i,i+1}=c_i\)</span>, and <span class="math inline">\(u_{ij}=a_{ij}=0\)</span> for <span class="math inline">\(j&gt;i+1\)</span>. <span class="qed">&#9632;</span></p></div>
+<p>Exactly the same can be seen from Gaussian elimination: at step <span class="math inline">\(i\)</span> only one element below the pivot <span class="math inline">\(u_i\)</span> is nonzero, namely, <span class="math inline">\(a_{i+1}\)</span>, and subtracting <span class="math inline">\(l_{i+1}\)</span> times row <span class="math inline">\(i\)</span> from row <span class="math inline">\(i+1\)</span> changes only one element, <span class="math inline">\(d_{i+1}\)</span>, since row <span class="math inline">\(i\)</span> contains only two nonzero elements, <span class="math inline">\(u_i\)</span> and <span class="math inline">\(c_i\)</span>. In the code <code>gauss_numpy</code> from Section 9 this means that the loops over <code>j</code> and <code>k</code> each do only one useful step, and all the other steps subtract zeros from zeros.</p>
+<p>Now the system <span class="math inline">\(\bs{Ax}=\bs b\)</span> is solved as in Section 9: first <span class="math inline">\(\bs{Ly}=\bs b\)</span> by forward substitution, then <span class="math inline">\(\bs{Ux}=\bs y\)</span> by back substitution. Since every row of <span class="math inline">\(\bs L\)</span> and <span class="math inline">\(\bs U\)</span> has at most two nonzero elements, both substitutions are very simple: <span class="math display">\begin{equation}\label{eq12:4}
+y_1=b_1,\quad y_i=b_i-l_iy_{i-1},\quad i=2,\ldots,n,
+\end{equation}</span> <span class="math display">\begin{equation}\label{eq12:5}
+x_n=\frac{y_n}{u_n}\,,\quad x_i=\frac{y_i-c_ix_{i+1}}{u_i}\,,\quad i=n-1,\ldots,1.
+\end{equation}</span> Formulas <span class="math inline">\(\eqref{eq12:3}\)</span>–<span class="math inline">\(\eqref{eq12:5}\)</span> are often called the <em>Thomas algorithm</em> (or the <em>tridiagonal matrix algorithm</em>). Note that the forward substitution <span class="math inline">\(\eqref{eq12:4}\)</span> can be performed together with the factorization <span class="math inline">\(\eqref{eq12:3}\)</span>, in the same loop, and that the matrix <span class="math inline">\(\bs L\)</span> is not even stored: I need each <span class="math inline">\(l_i\)</span> only once.</p>
+<div class="thm example style-definition" id="ex12:1"><p><span class="thm-head">Example 12.2.</span> Let me solve <span class="math display">\[
+\begin{bmatrix}
+4 &amp; 1 &amp; 0\\
+1 &amp; 4 &amp; 1\\
+0 &amp; 1 &amp; 4
+\end{bmatrix}\bs x=\begin{bmatrix}5\\6\\5\end{bmatrix},
+\]</span> whose exact solution is <span class="math inline">\(\bs x=(1,1,1)^\top\)</span>. I have <span class="math inline">\(u_1=4\)</span>, <span class="math inline">\(y_1=5\)</span>; next, <span class="math inline">\(l_2=1/4\)</span>, <span class="math inline">\(u_2=4-\frac14=\frac{15}{4}\)</span>, <span class="math inline">\(y_2=6-\frac54=\frac{19}{4}\)</span>; next, <span class="math inline">\(l_3=\frac{4}{15}\)</span>, <span class="math inline">\(u_3=4-\frac{4}{15}=\frac{56}{15}\)</span>, <span class="math inline">\(y_3=5-\frac{4}{15}\cdot\frac{19}{4}=\frac{56}{15}\)</span>. Back substitution gives <span class="math inline">\(x_3=1\)</span>, <span class="math inline">\(x_2=\left(\frac{19}{4}-1\right)\big/\frac{15}{4}=1\)</span>, <span class="math inline">\(x_1=(5-1)/4=1\)</span>.</p>
+</div>
+<h2 id="sec12-3"><span class="secnum">12.3</span><span class="sectitle">The number of operations</span></h2>
+<p>Let me count the elementary operations as in Section 8, multiplications/divisions and additions/subtractions separately. For each <span class="math inline">\(i=2,\ldots,n\)</span>, formulas <span class="math inline">\(\eqref{eq12:3}\)</span> require one division, one multiplication, and one subtraction, and <span class="math inline">\(\eqref{eq12:4}\)</span> one multiplication and one subtraction. In <span class="math inline">\(\eqref{eq12:5}\)</span> I need one division for <span class="math inline">\(x_n\)</span>, and one multiplication, one subtraction, and one division for each of <span class="math inline">\(x_{n-1},\ldots,x_1\)</span>. In total, <span class="math display">\[
+M=2(n-1)+(n-1)+1+2(n-1)=5n-4,\quad A=(n-1)+(n-1)+(n-1)=3n-3,
+\]</span> and <span class="math display">\[
+T_{\textup{tridiagonal}}=M+A=8n-7.
+\]</span> The number of operations is proportional to <span class="math inline">\(n\)</span>, not to <span class="math inline">\(n^3\)</span>. For instance, for <span class="math inline">\(n=1000\)</span> I need <span class="math inline">\(7993\)</span> operations, whereas Gaussian elimination for a full matrix needs <span class="math inline">\(T_{\textup{Gauss}}(1000)=668165500\)</span> (Section 8), i.e., about <span class="math inline">\(80000\)</span> times more. Note that the general algorithm does not “know” that the matrix is tridiagonal, and spends almost all of its time on subtracting zeros from zeros.</p>
+<p>The memory requirements are equally different: I need to store four arrays of length <span class="math inline">\(n\)</span> (<span class="math inline">\(a_i\)</span>, <span class="math inline">\(d_i\)</span>, <span class="math inline">\(c_i\)</span>, <span class="math inline">\(b_i\)</span>; the arrays <span class="math inline">\(u_i\)</span>, <span class="math inline">\(y_i\)</span>, <span class="math inline">\(x_i\)</span> can even overwrite them), instead of <span class="math inline">\(n^2\)</span> numbers. For <span class="math inline">\(n=10^6\)</span> a full matrix of <code>float</code> numbers (8 bytes each) would occupy <span class="math inline">\(8\cdot 10^{12}\)</span> bytes, i.e., 8 terabytes, while the four arrays occupy only <span class="math inline">\(32\)</span> megabytes.</p>
+<h2 id="sec12-4"><span class="secnum">12.4</span><span class="sectitle">Diagonal dominance: no pivoting is necessary</span></h2>
+<p>In Section 9 I showed that the <span class="math inline">\(\bs{LU}\)</span> factorization without pivoting can fail (if some <span class="math inline">\(u_i=0\)</span>) or give inaccurate results (if some <span class="math inline">\(u_i\)</span> is very small, so that large numbers appear in the computation, recall Section 10), and that in general one has to use partial pivoting. For a tridiagonal matrix pivoting is unpleasant: if I switch rows <span class="math inline">\(i\)</span> and <span class="math inline">\(i+1\)</span>, the new row <span class="math inline">\(i\)</span> contains a nonzero element <span class="math inline">\(c_{i+1}\)</span> in column <span class="math inline">\(i+2\)</span>, and <span class="math inline">\(\bs U\)</span> gets a second nonzero diagonal above the main one, i.e., the simple structure above is destroyed. Fortunately, for a very important class of matrices pivoting is not necessary.</p>
+<div class="thm definition style-plain" id="definition-12-3"><p><span class="thm-head">Definition 12.3.</span> A matrix <span class="math inline">\(\bs A\)</span> is called (strictly, by rows) <em>diagonally dominant</em> if in each row the absolute value of the diagonal element is larger than the sum of the absolute values of all the other elements: <span class="math display">\[
+|a_{ii}|&gt;\sum_{j\neq i}|a_{ij}|,\quad i=1,\ldots,n.
+\]</span> For the tridiagonal matrix <span class="math inline">\(\eqref{eq12:1}\)</span> this means that <span class="math inline">\(|d_i|&gt;|a_i|+|c_i|\)</span>, <span class="math inline">\(i=1,\ldots,n\)</span> (recall that <span class="math inline">\(a_1=c_n=0\)</span>).</p>
+</div>
+<p>For instance, the matrix in Example <a href="#ex12:1">12.2</a> is diagonally dominant, since <span class="math inline">\(4&gt;1+1\)</span>.</p>
+<div class="thm theorem style-plain" id="th12:1"><p><span class="thm-head">Theorem 12.4.</span> Let the tridiagonal matrix <span class="math inline">\(\eqref{eq12:1}\)</span> be diagonally dominant. Then the numbers <span class="math inline">\(u_i\)</span> in <span class="math inline">\(\eqref{eq12:3}\)</span> satisfy <span class="math display">\[
+|c_i|&lt;|u_i|\leq|d_i|+|a_i|,\quad i=1,\ldots,n.
+\]</span> In particular, all <span class="math inline">\(u_i\neq 0\)</span>, the Thomas algorithm <span class="math inline">\(\eqref{eq12:3}\)</span>–<span class="math inline">\(\eqref{eq12:5}\)</span> can always be performed without pivoting, and <span class="math inline">\(\bs A\)</span> is invertible.</p>
+</div>
+<div class="proof"><p><span class="thm-head">Proof.</span> I use induction. For <span class="math inline">\(i=1\)</span> I have <span class="math inline">\(u_1=d_1\)</span> and <span class="math inline">\(|c_1|&lt;|d_1|=|d_1|+|a_1|\)</span>. Assume that <span class="math inline">\(|u_{i-1}|&gt;|c_{i-1}|\)</span>. Then <span class="math display">\[
+|u_i|=\left|d_i-\frac{a_ic_{i-1}}{u_{i-1}}\right|\geq|d_i|-|a_i|\frac{|c_{i-1}|}{|u_{i-1}|}\geq |d_i|-|a_i|&gt;|c_i|,
+\]</span> since <span class="math inline">\(|c_{i-1}|/|u_{i-1}|&lt;1\)</span> and the matrix is diagonally dominant. Similarly, <span class="math display">\[
+|u_i|\leq|d_i|+|a_i|\frac{|c_{i-1}|}{|u_{i-1}|}\leq|d_i|+|a_i|.
+\]</span> Finally, <span class="math inline">\(\det\bs A=\det\bs L\det\bs U=u_1u_2\ldots u_n\neq 0\)</span>. <span class="qed">&#9632;</span></p></div>
+<p>The theorem says more than “no division by zero”. The pivots <span class="math inline">\(u_i\)</span> are not small (at least <span class="math inline">\(|c_i|\)</span>, and, as the proof shows, at least <span class="math inline">\(|d_i|-|a_i|\)</span>), and none of the elements of <span class="math inline">\(\bs U\)</span> is larger than <span class="math inline">\(|d_i|+|a_i|\)</span>, i.e., no large numbers appear during the computation. Exactly such large numbers were the source of the trouble without pivoting in Sections 9 and 10, and one can show that for diagonally dominant matrices the algorithm is stable, i.e., its rounding errors are not amplified. Without diagonal dominance the algorithm may fail even for a nonsingular matrix: for instance, for the tridiagonal matrix with <span class="math inline">\(d_1=0\)</span>, <span class="math inline">\(c_1=a_2=1\)</span> I get <span class="math inline">\(u_1=0\)</span> immediately.</p>
+<p>As I will show in Section 16, the system for the natural cubic splines has a tridiagonal matrix with the elements <span class="math inline">\(2(h_{i-1}+h_i)\)</span> on the main diagonal and <span class="math inline">\(h_{i-1}\)</span>, <span class="math inline">\(h_i\)</span> next to it, where <span class="math inline">\(h_i&gt;0\)</span> are the distances between the interpolation points; such a matrix is clearly diagonally dominant. The matrix in Example <a href="#ex12:1">12.2</a> is exactly this matrix for equally spaced points (divided by <span class="math inline">\(h\)</span>).</p>
+<h2 id="sec12-5"><span class="secnum">12.5</span><span class="sectitle">Python code</span></h2>
+<p>I store the tridiagonal matrix as three arrays <code>a</code>, <code>d</code>, <code>c</code> of length <span class="math inline">\(n\)</span>, so that row <code>i</code> of the matrix contains <code>a[i]</code>, <code>d[i]</code>, <code>c[i]</code> (as usual in Python, the indexes start with 0, so that <code>a[i]</code> is <span class="math inline">\(a_{i+1}\)</span> etc.); the elements <code>a[0]</code> and <code>c[n - 1]</code> are not used. The multiplier <span class="math inline">\(l_i\)</span> is called <code>m</code>, as in Section 7 (PEP 8 recommends not to use the letter <code>l</code> as a name, since it is easily confused with <code>1</code>).</p>
+<pre class="code script"><code><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">tridiagonal_solve</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                      <span class="n">b</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Solve the system Ax = b with a tridiagonal matrix A by the Thomas algorithm.</span>
+
+<span class="sd">    Row i of A contains a[i], d[i], c[i] (below, on, and above the main diagonal);</span>
+<span class="sd">    a[0] and c[n - 1] are not used. No pivoting is done, hence the matrix should</span>
+<span class="sd">    be, e.g., diagonally dominant.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>     <span class="c1"># the main diagonal of U</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>     <span class="c1"># the solution of Ly = b</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>     <span class="c1"># the solution of Ux = y</span>
+
+    <span class="c1"># the LU factorization and the forward substitution, (12.3) and (12.4)</span>
+    <span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ZeroDivisionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Zero on the main diagonal of U in row </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>             <span class="c1"># the multiplier l_i</span>
+        <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">m</span> <span class="o">*</span> <span class="n">c</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">m</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># the back substitution (12.5)</span>
+    <span class="n">x</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">u</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">x</span>
+
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>       <span class="c1"># the system from Example 12.2</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">4.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">])</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tridiagonal_solve</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span></code></pre>
+<pre class="pyout"><code>[1. 1. 1.]</code></pre>
+<p>Note that the loops here cannot be vectorized (compare with Section 9): each step uses the result of the previous one. This is not a problem, since there are only about <span class="math inline">\(8n\)</span> operations anyway.</p>
+<p>To test the function on larger systems, I take random diagonally dominant matrices: the elements <span class="math inline">\(a_i\)</span> and <span class="math inline">\(c_i\)</span> are random numbers from <span class="math inline">\([0,1)\)</span>, and <span class="math inline">\(d_i=a_i+c_i+1\)</span>. As in Section 7, I choose the exact solution <span class="math inline">\(\bs{\hat x}=(1,\ldots,1)^\top\)</span>; then <span class="math inline">\(b_i=a_i+d_i+c_i\)</span> (this is why it is convenient to set <code>a[0]</code> and <code>c[n - 1]</code> to zero). First I compare my function with <code>np.linalg.solve</code>, for which I need the full matrix; it is built by the function <code>np.diag(v, k)</code>, which creates a matrix with the elements of <code>v</code> on the diagonal number <code>k</code> (<code>k = 0</code> is the main diagonal, <code>k = 1</code> is the one above it, and <code>k = -1</code> is the one below it).</p>
+<pre class="code script"><code><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">random_tridiagonal_system</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a, d, c, b of a random diagonally dominant system.</span>
+
+<span class="sd">    The exact solution of the system is (1, ..., 1).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">c</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">c</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">d</span> <span class="o">+</span> <span class="n">c</span>
+    <span class="k">return</span> <span class="n">a</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">b</span>
+
+
+<span class="n">n</span> <span class="o">=</span> <span class="mi">1000</span>
+<span class="n">a</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">random_tridiagonal_system</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+<span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">c</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>    <span class="c1"># the full matrix</span>
+
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="n">x1</span> <span class="o">=</span> <span class="n">tridiagonal_solve</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="n">x2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<span class="n">t2</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tridiagonal_solve: error </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">))</span><span class="si">:</span><span class="s2">.1e</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;np.linalg.solve:   error </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x2</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">))</span><span class="si">:</span><span class="s2">.1e</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">t2</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t1</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span></code></pre>
+<pre class="pyout"><code>tridiagonal_solve: error 5.6e-16, 0.0015 seconds
+np.linalg.solve:   error 5.6e-16, 0.0314 seconds</code></pre>
+<p>Both solutions are accurate to the last digits (the condition number of these matrices is small, recall Section 11), and my simple function with Python loops is faster than the professional, compiled <code>np.linalg.solve</code> applied to the full matrix: a good algorithm beats a good implementation of a worse algorithm. On the other hand, about <span class="math inline">\(8000\)</span> operations in about a millisecond is only several million operations per second, which shows again how slow Python loops are (Section 9). In practice one uses a compiled implementation, e.g., the function <code>solve_banded</code> from the package SciPy (Exercise <a href="#exer:12:scipy">12.6</a>).</p>
+<p>Finally, let me check that the time grows linearly with <span class="math inline">\(n\)</span>. For <span class="math inline">\(n=10^6\)</span> the full matrix could not even be stored.</p>
+<pre class="code script"><code><span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">10</span><span class="o">**</span><span class="mi">4</span><span class="p">,</span> <span class="mi">10</span><span class="o">**</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="o">**</span><span class="mi">6</span><span class="p">]:</span>
+    <span class="n">a</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">random_tridiagonal_system</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">tridiagonal_solve</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+    <span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;n = </span><span class="si">{</span><span class="n">n</span><span class="si">:</span><span class="s2">7d</span><span class="si">}</span><span class="s2">: error </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">))</span><span class="si">:</span><span class="s2">.1e</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span></code></pre>
+<pre class="pyout"><code>n =   10000: error 4.4e-16, 0.014 seconds
+n =  100000: error 6.7e-16, 0.173 seconds
+n = 1000000: error 6.7e-16, 1.565 seconds</code></pre>
+<p>When <span class="math inline">\(n\)</span> is multiplied by <span class="math inline">\(10\)</span>, the time is multiplied by about <span class="math inline">\(10\)</span>, as predicted.</p>
+<p>To see why diagonal dominance (or pivoting) matters, consider the system <span class="math display">\[
+\begin{bmatrix}10^{-20} &amp; 1\\ 1 &amp; 1\end{bmatrix}\bs x=\begin{bmatrix}1\\ 2\end{bmatrix},
+\]</span> whose solution is very close to <span class="math inline">\((1,1)^\top\)</span>, and whose matrix is not diagonally dominant (its first row).</p>
+<pre class="code script"><code><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1e-20</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tridiagonal_solve</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span></code></pre>
+<pre class="pyout"><code>[0. 1.]</code></pre>
+<p>Here <span class="math inline">\(u_1=10^{-20}\)</span> is tiny, hence <span class="math inline">\(l_2=10^{20}\)</span> and <span class="math inline">\(u_2=1-10^{20}\)</span> are huge, the number <span class="math inline">\(1\)</span> is lost in the subtraction (recall Section 10), and the first component of the solution is completely wrong. The matrix is perfectly well-conditioned (<span class="math inline">\(\kappa_\infty\approx 4\)</span>), and with partial pivoting (switching the two rows) the problem disappears.</p>
+<h2 id="sec12-6"><span class="secnum">12.6</span><span class="sectitle">Exercises</span></h2>
+<div class="thm exercise style-definition" id="exercise-12-1"><p><span class="thm-head">Exercise 12.1.</span> Show that the matrix <span class="math display">\[
+\bs A_n=\begin{bmatrix}
+2 &amp; -1 &amp; &amp; \\
+-1 &amp; 2 &amp; \ddots &amp; \\
+ &amp; \ddots &amp; \ddots &amp; -1\\
+ &amp; &amp; -1 &amp; 2
+\end{bmatrix}
+\]</span> of size <span class="math inline">\(n\times n\)</span> is not diagonally dominant, but nevertheless the Thomas algorithm can be performed: prove that <span class="math inline">\(u_i=(i+1)/i\)</span>. Find <span class="math inline">\(\det\bs A_n\)</span>. Check your answers numerically.</p>
+</div>
+<div class="thm exercise style-definition" id="exercise-12-2"><p><span class="thm-head">Exercise 12.2.</span> Show that the numbers <span class="math inline">\(u_i\)</span> in <span class="math inline">\(\eqref{eq12:3}\)</span> are the same for the matrices <span class="math inline">\(\bs A\)</span> and <span class="math inline">\(\bs A^\top\)</span>. Conclude that Theorem <a href="#th12:1">12.4</a> also holds for matrices that are diagonally dominant <em>by columns</em>, i.e., <span class="math inline">\(|d_i|&gt;|c_{i-1}|+|a_{i+1}|\)</span> (with <span class="math inline">\(c_0=a_{n+1}=0\)</span>).</p>
+</div>
+<div class="thm exercise style-definition" id="exercise-12-3"><p><span class="thm-head">Exercise 12.3.</span> Find a nonsingular <span class="math inline">\(3\times 3\)</span> tridiagonal matrix with all <span class="math inline">\(d_i\neq 0\)</span> for which the function <code>tridiagonal_solve</code> stops with the error <code>ZeroDivisionError</code>. What does partial pivoting do with this matrix?</p>
+</div>
+<div class="thm exercise style-definition" id="exercise-12-4"><p><span class="thm-head">Exercise 12.4.</span> In applications, one often has to solve many systems with the same matrix and different right-hand sides. Write two functions: <code>tridiagonal_lu(a, d, c)</code>, which returns the arrays of the multipliers <span class="math inline">\(l_i\)</span> and of the diagonal elements <span class="math inline">\(u_i\)</span>, and <code>tridiagonal_lu_solve(l, u, c, b)</code>, which solves the system using them. Count the number of operations of each function.</p>
+</div>
+<div class="thm exercise style-definition" id="exercise-12-5"><p><span class="thm-head">Exercise 12.5.</span> Measure the time of <code>tridiagonal_solve</code> for several values of <span class="math inline">\(n\)</span>, and find the slope of the line that fits the points <span class="math inline">\((\log n,\log t)\)</span>, as in Section 8. Which slope do you expect?</p>
+</div>
+<div class="thm exercise style-definition" id="exer:12:scipy"><p><span class="thm-head">Exercise 12.6.</span> The function <code>scipy.linalg.solve_banded((1, 1), ab, b)</code> from the package SciPy solves systems with tridiagonal (and, more generally, banded) matrices with a compiled code. Here <code>ab</code> is a <span class="math inline">\(3\times n\)</span> array whose rows contain the three diagonals: with my notation, <code>ab[0, 1:] = c[:-1]</code>, <code>ab[1] = d</code>, and <code>ab[2, :-1] = a[1:]</code>. Compare its speed and accuracy with <code>tridiagonal_solve</code> for <span class="math inline">\(n=10^6\)</span>.</p>
+</div>
+</article>
+<nav class="pager" aria-label="More sections"><a class="prev" href="11.html"><span class="dir">Previous</span><span class="pt"><span class="pnum">11</span> Norms of vectors and matrices. Condition number</span></a><a class="next" href="13.html"><span class="dir">Next</span><span class="pt"><span class="pnum">13</span> Polynomial interpolation</span></a></nav>
+</main>
+</div>
+<a class="to-top" href="#" aria-label="Back to top">&uarr;</a>
+</body>
+</html>
